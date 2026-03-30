@@ -9,7 +9,7 @@ const EMPTY_MEASUREMENTS = {
   height: '', chest: '', waist: '', hip: '', sleeve: '', shoulder: '',
 }
 
-// ── Auth Modal ────────────────────────────────────────────────────────────────
+// Auth Modal 
 
 function AuthModal({ onSuccess, onClose }) {
   const { login, register } = useAuth()
@@ -72,7 +72,7 @@ function AuthModal({ onSuccess, onClose }) {
   )
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+//Main component
 
 export default function Zahialga() {
   const { user } = useAuth()
@@ -94,7 +94,7 @@ export default function Zahialga() {
   const [submitLoading, setSubmitLoading] = useState(false)
   const [apiError, setApiError] = useState('')
 
-  // Load garment designs on mount
+
   useEffect(() => {
     api.get('/garments')
       .then(data => setDesigns(data.garments))
@@ -102,7 +102,7 @@ export default function Zahialga() {
       .finally(() => setLoadingDesigns(false))
   }, [])
 
-  // Load tailors when reaching step 2
+
   useEffect(() => {
     if (step === 2 && tailors.length === 0) {
       setLoadingTailors(true)
@@ -113,7 +113,7 @@ export default function Zahialga() {
     }
   }, [step])
 
-  // ── Step navigation ──────────────────────────────────────────────────────
+
 
   const goNext = () => {
     if (step === 0 && !selectedDesign) { setErrors({ design: 'Загвар сонгоно уу' }); return }
@@ -134,7 +134,7 @@ export default function Zahialga() {
     setErrors(p => ({ ...p, [e.target.name]: undefined }))
   }
 
-  // ── Submit ───────────────────────────────────────────────────────────────
+  // Submit 
 
   const handleSubmit = async () => {
     if (!user) {
@@ -149,8 +149,8 @@ export default function Zahialga() {
     setApiError('')
     try {
       const data = await api.post('/orders', {
-        design_id:    selectedDesign.id,
-        tailor_id:    selectedTailor.id,
+        design_id: selectedDesign.id,
+        tailor_id: selectedTailor.id,
         measurements,
       })
       setSubmittedOrder(data.order)
@@ -167,7 +167,7 @@ export default function Zahialga() {
     setSelectedTailor(null); setSubmitted(false); setSubmittedOrder(null); setErrors({})
   }
 
-  // ── Success screen ───────────────────────────────────────────────────────
+  // Success screen 
 
   if (submitted && submittedOrder) {
     return (
@@ -192,7 +192,7 @@ export default function Zahialga() {
     )
   }
 
-  // ── Main page ────────────────────────────────────────────────────────────
+  // Main page 
 
   return (
     <main className="zahialga-page">
@@ -270,11 +270,11 @@ export default function Zahialga() {
             </p>
             <div className="measure-grid">
               {[
-                { name: 'height',   label: 'Өндөр',        icon: '↕', hint: 'Толгойноос хөлийн ул хүртэл' },
-                { name: 'chest',    label: 'Цээж',         icon: '○', hint: 'Цээжний хамгийн өргөн хэсэг' },
-                { name: 'waist',    label: 'Бүсэлхий',    icon: '○', hint: 'Хамгийн нарийн хэсэг' },
-                { name: 'hip',      label: 'Ташаа',        icon: '○', hint: 'Ташааны хамгийн өргөн хэсэг' },
-                { name: 'sleeve',   label: 'Гарын урт',    icon: '↔', hint: 'Мөрнөөс бугуй хүртэл' },
+                { name: 'height', label: 'Өндөр', icon: '↕', hint: 'Толгойноос хөлийн ул хүртэл' },
+                { name: 'chest', label: 'Цээж', icon: '○', hint: 'Цээжний хамгийн өргөн хэсэг' },
+                { name: 'waist', label: 'Бүсэлхий', icon: '○', hint: 'Хамгийн нарийн хэсэг' },
+                { name: 'hip', label: 'Ташаа', icon: '○', hint: 'Ташааны хамгийн өргөн хэсэг' },
+                { name: 'sleeve', label: 'Гарын урт', icon: '↔', hint: 'Мөрнөөс бугуй хүртэл' },
                 { name: 'shoulder', label: 'Мөрний өргөн', icon: '↔', hint: 'Мөрний хоорондох зай' },
               ].map(field => (
                 <div key={field.name} className="measure-field">
