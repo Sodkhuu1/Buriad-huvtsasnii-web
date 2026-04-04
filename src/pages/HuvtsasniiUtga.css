@@ -1,0 +1,255 @@
+/* ========================
+   HuvtsasniiUtga page
+   ======================== */
+
+.huvtsas-page {
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+/* Header */
+.huvtsas-header {
+  padding: 140px 24px 56px;
+  text-align: center;
+  border-bottom: 1px solid rgba(201,162,39,0.18);
+}
+
+/* ── Main layout ───────────────────────────────────── */
+.huvtsas-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+/* ── Figure side ───────────────────────────────────── */
+.huvtsas-figure-wrap {
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.figure-svg {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  filter: drop-shadow(0 12px 40px rgba(13,27,42,0.18));
+}
+
+/* SVG part hover interactions */
+.part-group {
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center center;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              filter 0.28s ease;
+}
+
+.part-group:hover,
+.part-group--active {
+  transform: scale(1.08);
+  filter: brightness(1.18) drop-shadow(0 4px 18px rgba(139,26,42,0.45));
+}
+
+/* Part label buttons (mobile-friendly row under figure) */
+.huvtsas-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.huvtsas-label-btn {
+  padding: 5px 14px;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.huvtsas-label-btn:hover,
+.huvtsas-label-btn.active {
+  background: var(--crimson);
+  border-color: var(--crimson);
+  color: var(--cream);
+}
+
+/* ── Info panel side ───────────────────────────────── */
+.huvtsas-info {
+  padding-top: 8px;
+  min-height: 360px;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Info card (shown when a part is hovered) */
+.huvtsas-card {
+  width: 100%;
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 40px 36px;
+  box-shadow: var(--shadow-md);
+  border-top: 4px solid var(--crimson);
+  animation: cardIn 0.32s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.huvtsas-card__tag {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: white;
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-light));
+  padding: 4px 14px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 10px rgba(139,26,42,0.3);
+}
+
+.huvtsas-card__meaning {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.huvtsas-card__text {
+  font-size: 0.97rem;
+  color: var(--text-mid);
+  line-height: 1.85;
+}
+
+/* Hint panel (shown when nothing is hovered) */
+.huvtsas-hint {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 280px;
+  border: 2px dashed var(--cream-dark);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.huvtsas-hint__icon {
+  font-size: 2.8rem;
+  color: var(--gold);
+  animation: hintBounce 1.8s ease-in-out infinite;
+}
+
+@keyframes hintBounce {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-8px); }
+}
+
+.huvtsas-hint__text {
+  font-size: 1rem;
+  color: var(--text-light);
+  line-height: 1.7;
+}
+
+.huvtsas-hint__dots {
+  display: flex;
+  gap: 8px;
+}
+
+.huvtsas-hint__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  opacity: 0.4;
+  animation: dotPulse 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes dotPulse {
+  from { opacity: 0.2; transform: scale(0.8); }
+  to   { opacity: 0.8; transform: scale(1.2); }
+}
+
+/* ── Bottom chips row ──────────────────────────────── */
+.huvtsas-chips-section {
+  padding-bottom: 80px;
+}
+
+.huvtsas-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.huvtsas-chip {
+  padding: 8px 22px;
+  border: 1.5px solid rgba(201,162,39,0.35);
+  border-radius: 999px;
+  background: white;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--navy-mid);
+  cursor: pointer;
+  transition: all 0.22s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.huvtsas-chip:hover,
+.huvtsas-chip.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--cream);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13,27,42,0.2);
+}
+
+/* ── Responsive ────────────────────────────────────── */
+@media (max-width: 768px) {
+  .huvtsas-body {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-top: 40px;
+  }
+
+  .huvtsas-figure-wrap {
+    position: static;
+  }
+
+  .figure-svg {
+    max-width: 240px;
+  }
+
+  .huvtsas-info {
+    min-height: unset;
+  }
+
+  .huvtsas-card {
+    padding: 28px 24px;
+  }
+}
