@@ -1,0 +1,111 @@
+/* ── Filter tabs ─────────────────────────────────────────── */
+.tdo-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.tdo-filter {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1.5px solid var(--cream-dark);
+  background: var(--white);
+  color: var(--text-mid);
+  font-size: 0.83rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-body);
+}
+
+.tdo-filter:hover {
+  border-color: var(--crimson);
+  color: var(--crimson);
+}
+
+.tdo-filter--active {
+  background: var(--crimson);
+  border-color: var(--crimson);
+  color: var(--white);
+}
+
+/* ── Order list ──────────────────────────────────────────── */
+.tdo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tdo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
+  border: 1.5px solid transparent;
+}
+
+.tdo-card:hover {
+  border-color: var(--crimson);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.tdo-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tdo-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tdo-card__number {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.tdo-card__design {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.tdo-card__customer {
+  font-size: 0.83rem;
+  color: var(--text-light);
+}
+
+.tdo-card__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.tdo-card__date {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.tdo-card__amount {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.tdo-card__arrow {
+  font-size: 1rem;
+  color: var(--crimson);
+  margin-top: 4px;
+}

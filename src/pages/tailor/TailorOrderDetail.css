@@ -1,0 +1,221 @@
+/* ── Back button ─────────────────────────────────────────── */
+.tod-back {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 20px;
+  transition: var(--transition);
+  font-family: var(--font-body);
+}
+
+.tod-back:hover { color: var(--crimson); }
+
+/* ── Header ──────────────────────────────────────────────── */
+.tod-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.tod-status-badge {
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  margin-top: 6px;
+}
+
+/* ── Two-column grid ─────────────────────────────────────── */
+.tod-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.tod-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Card title ──────────────────────────────────────────── */
+.tod-card-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 16px;
+}
+
+/* ── Design card ─────────────────────────────────────────── */
+.tod-design {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.tod-design__img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.tod-design__name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+
+.tod-design__cat {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+
+.tod-design__price {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--crimson);
+}
+
+/* ── Info rows ───────────────────────────────────────────── */
+.tod-info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tod-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+}
+
+.tod-info-key {
+  color: var(--text-light);
+  font-size: 0.82rem;
+}
+
+.tod-info-val {
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+/* ── Measurements ────────────────────────────────────────── */
+.tod-measurements {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.tod-measure-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+.tod-measure-key { color: var(--text-light); }
+
+.tod-measure-val {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.tod-no-measure {
+  font-size: 0.88rem;
+  color: var(--text-light);
+}
+
+/* ── Actions card ────────────────────────────────────────── */
+.tod-note {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  resize: vertical;
+  margin-bottom: 14px;
+  color: var(--text-dark);
+  transition: border-color var(--transition);
+}
+
+.tod-note:focus {
+  outline: none;
+  border-color: var(--crimson);
+}
+
+.tod-action-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tod-action-btn {
+  padding: 11px 22px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+}
+
+.tod-action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.tod-action-btn--primary {
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-light));
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(139,26,42,0.3);
+}
+
+.tod-action-btn--primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(139,26,42,0.4);
+}
+
+.tod-action-btn--danger {
+  background: transparent;
+  color: #7F1D1D;
+  border: 1.5px solid #FECACA;
+}
+
+.tod-action-btn--danger:hover:not(:disabled) {
+  background: #FEF2F2;
+  border-color: #EF4444;
+}
+
+/* ── Waiting card ────────────────────────────────────────── */
+.tod-waiting-card {
+  text-align: center;
+  padding: 28px;
+}
+
+.tod-waiting-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  opacity: 0.5;
+}
+
+.tod-waiting-text {
+  font-size: 0.88rem;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .tod-grid { grid-template-columns: 1fr; }
+}

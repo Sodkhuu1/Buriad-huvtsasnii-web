@@ -13,13 +13,13 @@ const createOrder = async (req, res, next) => {
   try {
     await client.query('BEGIN')
 
-    const { design_id, tailor_id, material_option_id, measurements, custom_note } = req.body
+    const { design_id, material_option_id, measurements, custom_note } = req.body
     const customer_id = req.user.id
 
     // ── Validate input ────────────────────────────────────────────────────────
 
-    if (!design_id || !tailor_id || !measurements) {
-      return next(createError(400, 'design_id, tailor_id and measurements are required'))
+    if (!design_id || !measurements) {
+      return next(createError(400, 'design_id and measurements are required'))
     }
 
     const requiredMeasurements = ['height', 'chest', 'waist', 'hip', 'sleeve', 'shoulder']
@@ -40,18 +40,6 @@ const createOrder = async (req, res, next) => {
     }
     const design = designResult.rows[0]
 
-    // ── Check tailor exists and is verified ───────────────────────────────────
-
-    const tailorResult = await client.query(
-      `SELECT u.id FROM users u
-       JOIN tailor_profiles tp ON tp.user_id = u.id
-       WHERE u.id = $1 AND u.status = 'active' AND tp.verified = true`,
-      [tailor_id]
-    )
-    if (!tailorResult.rows.length) {
-      return next(createError(404, 'Tailor not found or not verified'))
-    }
-
     // ── Calculate price ───────────────────────────────────────────────────────
 
     let extraCost = 0
@@ -71,10 +59,10 @@ const createOrder = async (req, res, next) => {
     // ── Create the order ──────────────────────────────────────────────────────
 
     const orderResult = await client.query(
-      `INSERT INTO orders (order_number, customer_id, tailor_id, status, subtotal, total_amount)
-       VALUES ($1, $2, $3, 'submitted', $4, $4)
+      `INSERT INTO orders (order_number, customer_id, status, subtotal, total_amount)
+       VALUES ($1, $2, 'submitted', $3, $3)
        RETURNING id, order_number, status, total_amount, created_at`,
-      [orderNumber, customer_id, tailor_id, unitPrice]
+      [orderNumber, customer_id, unitPrice]
     )
     const order = orderResult.rows[0]
 

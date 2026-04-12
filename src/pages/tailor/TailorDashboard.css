@@ -1,0 +1,115 @@
+/* ── Stat cards ──────────────────────────────────────────── */
+.td-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.td-stat-card {
+  position: relative;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 24px 20px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border-top: 3px solid transparent;
+}
+
+.td-stat-card--new        { border-top-color: #6366F1; }
+.td-stat-card--production { border-top-color: var(--gold); }
+.td-stat-card--ready      { border-top-color: #06B6D4; }
+.td-stat-card--completed  { border-top-color: var(--crimson); }
+
+.td-stat-card__value {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.td-stat-card__label {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.td-stat-card__icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  opacity: 0.07;
+  color: var(--navy);
+}
+
+/* ── Section header ──────────────────────────────────────── */
+.td-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.td-section-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.td-link {
+  font-size: 0.85rem;
+  color: var(--crimson);
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.td-link:hover { color: var(--crimson-light); }
+
+/* ── Table ───────────────────────────────────────────────── */
+.td-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.td-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.td-table td {
+  padding: 14px 14px;
+  border-bottom: 1px solid var(--cream-dark);
+  color: var(--text-dark);
+  vertical-align: middle;
+}
+
+.td-table tr:last-child td { border-bottom: none; }
+
+.td-table tr:hover td { background: var(--cream); }
+
+.td-table__number {
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: var(--text-light);
+}
+
+.td-table__date {
+  color: var(--text-light);
+  font-size: 0.82rem;
+}
+
+@media (max-width: 1024px) {
+  .td-stats { grid-template-columns: repeat(2, 1fr); }
+}

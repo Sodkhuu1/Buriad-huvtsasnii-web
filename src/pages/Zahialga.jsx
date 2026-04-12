@@ -3,7 +3,7 @@ import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
 import './Zahialga.css'
 
-const STEPS = ['Загвар', 'Хэмжээс', 'Оёдолчин', 'Батлах']
+const STEPS = ['Загвар', 'Хэмжээс', 'Батлах']
 
 const EMPTY_MEASUREMENTS = {
   height: '', chest: '', waist: '', hip: '', sleeve: '', shoulder: '',
@@ -80,7 +80,6 @@ export default function Zahialga() {
   const [step, setStep] = useState(0)
   const [selectedDesign, setSelectedDesign] = useState(null)
   const [measurements, setMeasurements] = useState(EMPTY_MEASUREMENTS)
-  const [selectedTailor, setSelectedTailor] = useState(null)
   const [submitted, setSubmitted] = useState(false)
   const [submittedOrder, setSubmittedOrder] = useState(null)
   const [errors, setErrors] = useState({})
@@ -88,9 +87,7 @@ export default function Zahialga() {
 
   // API data
   const [designs, setDesigns] = useState([])
-  const [tailors, setTailors] = useState([])
   const [loadingDesigns, setLoadingDesigns] = useState(true)
-  const [loadingTailors, setLoadingTailors] = useState(false)
   const [submitLoading, setSubmitLoading] = useState(false)
   const [apiError, setApiError] = useState('')
 
@@ -103,18 +100,6 @@ export default function Zahialga() {
   }, [])
 
 
-  useEffect(() => {
-    if (step === 2 && tailors.length === 0) {
-      setLoadingTailors(true)
-      api.get('/tailors')
-        .then(data => setTailors(data.tailors))
-        .catch(() => setApiError('Оёдолчдын мэдээлэл татахад алдаа гарлаа'))
-        .finally(() => setLoadingTailors(false))
-    }
-  }, [step])
-
-
-
   const goNext = () => {
     if (step === 0 && !selectedDesign) { setErrors({ design: 'Загвар сонгоно уу' }); return }
     if (step === 1) {
@@ -122,7 +107,6 @@ export default function Zahialga() {
       Object.entries(measurements).forEach(([k, v]) => { if (!v) errs[k] = 'Шаардлагатай' })
       if (Object.keys(errs).length) { setErrors(errs); return }
     }
-    if (step === 2 && !selectedTailor) { setErrors({ tailor: 'Оёдолчин сонгоно уу' }); return }
     setErrors({})
     setStep(s => s + 1)
   }
@@ -150,7 +134,6 @@ export default function Zahialga() {
     try {
       const data = await api.post('/orders', {
         design_id: selectedDesign.id,
-        tailor_id: selectedTailor.id,
         measurements,
       })
       setSubmittedOrder(data.order)
@@ -164,7 +147,7 @@ export default function Zahialga() {
 
   const reset = () => {
     setStep(0); setSelectedDesign(null); setMeasurements(EMPTY_MEASUREMENTS)
-    setSelectedTailor(null); setSubmitted(false); setSubmittedOrder(null); setErrors({})
+    setSubmitted(false); setSubmittedOrder(null); setErrors({})
   }
 
   // Success screen 
@@ -176,15 +159,13 @@ export default function Zahialga() {
           <div className="zahialga-success__icon">✓</div>
           <h2 className="zahialga-success__title">Захиалга амжилттай!</h2>
           <p className="zahialga-success__text">
-            Таны захиалга <strong>{selectedTailor.full_name}</strong>-д илгээгдлээ.<br />
+            Таны захиалга амжилттай илгээгдлээ.<br />
             Оёдолчин тантай удахгүй холбогдох болно.
           </p>
           <div className="zahialga-success__summary">
             <span>{selectedDesign.name}</span>
             <span>·</span>
             <span>#{submittedOrder.order_number}</span>
-            <span>·</span>
-            <span>{Number(submittedOrder.total_amount).toLocaleString()}₮</span>
           </div>
           <button className="btn-primary" onClick={reset}>Шинэ захиалга</button>
         </div>
@@ -208,7 +189,7 @@ export default function Zahialga() {
         <h1 className="zahialga-header__title section-title">Захиалга өгөх</h1>
         <span className="gold-line" />
         <p className="zahialga-header__sub section-subtitle">
-          Дөрвөн алхмаар биеийн хэмжээсэндээ тохирсон буриад хувцас захиалаарай.
+          Гурван алхмаар биеийн хэмжээсэндээ тохирсон буриад хувцас захиалаарай.
         </p>
       </div>
 
@@ -302,44 +283,8 @@ export default function Zahialga() {
           </div>
         )}
 
-        {/* ── STEP 2: Оёдолчин сонгох ───────────────────────────────────── */}
+        {/* ── STEP 2: Батлах ────────────────────────────────────────────── */}
         {step === 2 && (
-          <div className="zahialga-section">
-            <h2 className="zahialga-section__title">Оёдолчин сонгоно уу</h2>
-            {errors.tailor && <p className="zahialga-error">{errors.tailor}</p>}
-
-            {loadingTailors ? (
-              <div className="zahialga-loading">Ачааллаж байна...</div>
-            ) : (
-              <div className="tailor-list">
-                {tailors.map(t => (
-                  <button
-                    key={t.id}
-                    className={`tailor-card${selectedTailor?.id === t.id ? ' tailor-card--selected' : ''}`}
-                    onClick={() => { setSelectedTailor(t); setErrors({}) }}
-                  >
-                    <img src={t.avatar_url} alt={t.full_name} className="tailor-card__avatar" />
-                    <div className="tailor-card__info">
-                      <h3 className="tailor-card__name">{t.full_name}</h3>
-                      <p className="tailor-card__spec">{t.specialization}</p>
-                      <p className="tailor-card__business">{t.business_name}</p>
-                    </div>
-                    <div className="tailor-card__meta">
-                      <div className="tailor-card__rating">★ {t.rating}</div>
-                      <div className="tailor-card__days">⏱ {t.min_lead_days}–{t.max_lead_days} хоног</div>
-                    </div>
-                    {selectedTailor?.id === t.id && (
-                      <div className="tailor-card__selected-badge">✓</div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── STEP 3: Батлах ────────────────────────────────────────────── */}
-        {step === 3 && (
           <div className="zahialga-section">
             <h2 className="zahialga-section__title">Захиалгаа шалгаад батлаарай</h2>
 
@@ -371,18 +316,6 @@ export default function Zahialga() {
                 </div>
               </div>
 
-              <div className="confirm-card">
-                <h3 className="confirm-card__title">Оёдолчин</h3>
-                <div className="confirm-tailor">
-                  <img src={selectedTailor.avatar_url} alt={selectedTailor.full_name} className="confirm-tailor__avatar" />
-                  <div>
-                    <p className="confirm-tailor__name">{selectedTailor.full_name}</p>
-                    <p className="confirm-tailor__business">{selectedTailor.business_name}</p>
-                    <p className="confirm-tailor__days">Хугацаа: {selectedTailor.min_lead_days}–{selectedTailor.max_lead_days} хоног</p>
-                  </div>
-                </div>
-              </div>
-
             </div>
 
             <div className="confirm-note">
@@ -401,7 +334,7 @@ export default function Zahialga() {
               ← Буцах
             </button>
           )}
-          {step < 3 ? (
+          {step < 2 ? (
             <button className="btn-primary" onClick={goNext}>
               Үргэлжлүүлэх →
             </button>

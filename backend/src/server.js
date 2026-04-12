@@ -8,10 +8,11 @@ require('dotenv').config();
 const { errorHandler } = require('./middleware/errorHandler');
 
 // Import routes
-const authRoutes    = require('./routes/auth.routes')
-const garmentRoutes = require('./routes/garments.routes')
-const tailorRoutes  = require('./routes/tailors.routes')
-const orderRoutes   = require('./routes/orders.routes');
+const authRoutes        = require('./routes/auth.routes')
+const garmentRoutes     = require('./routes/garments.routes')
+const tailorRoutes      = require('./routes/tailors.routes')
+const orderRoutes       = require('./routes/orders.routes')
+const tailorDashRoutes  = require('./routes/tailor.routes')
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,7 +28,8 @@ app.use(express.json());
 app.use('/api/auth',    authRoutes)
 app.use('/api/garments', garmentRoutes)
 app.use('/api/tailors',  tailorRoutes)
-app.use('/api/orders',   orderRoutes);
+app.use('/api/orders',   orderRoutes)
+app.use('/api/tailor',   tailorDashRoutes)
 
 // Health check — useful to test if the server is running
 app.get('/api/health', (req, res) => {
