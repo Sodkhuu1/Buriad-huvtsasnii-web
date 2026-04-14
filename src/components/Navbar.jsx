@@ -53,6 +53,11 @@ export default function Navbar() {
           ))}
         </nav>
 
+        {/* Login button */}
+        <NavLink to="/login" className="navbar__login">
+          Нэвтрэх
+        </NavLink>
+
         {/* CTA button */}
         <NavLink to="/zahialga" className="navbar__cta btn-primary">
           Захиалга өгөх
@@ -82,6 +87,9 @@ export default function Navbar() {
             {label}
           </NavLink>
         ))}
+        <NavLink to="/login" className="navbar__mobile-link">
+          Нэвтрэх
+        </NavLink>
         <NavLink to="/zahialga" className="btn-primary navbar__mobile-cta">
           Захиалга өгөх
         </NavLink>
