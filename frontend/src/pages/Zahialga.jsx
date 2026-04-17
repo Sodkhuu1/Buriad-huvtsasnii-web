@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
 import './Zahialga.css'
@@ -13,6 +14,7 @@ const EMPTY_MEASUREMENTS = {
 
 function AuthModal({ onSuccess, onClose }) {
   const { login, register } = useAuth()
+  const navigate = useNavigate()
   const [tab, setTab] = useState('login')
   const [form, setForm] = useState({ full_name: '', email: '', phone: '', password: '' })
   const [loading, setLoading] = useState(false)
@@ -25,10 +27,16 @@ function AuthModal({ onSuccess, onClose }) {
     setLoading(true)
     setError('')
     try {
+      let user
       if (tab === 'login') {
-        await login(form.email, form.password)
+        user = await login(form.email, form.password)
       } else {
-        await register({ ...form, role: 'customer' })
+        user = await register({ ...form, role: 'customer' })
+      }
+      // Оёдолчин нэвтэрвэл шууд dashboard руу явна
+      if (user.role === 'tailor') {
+        navigate('/tailor', { replace: true })
+        return
       }
       onSuccess()
     } catch (err) {

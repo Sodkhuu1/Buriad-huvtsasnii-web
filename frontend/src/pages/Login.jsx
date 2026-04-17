@@ -24,7 +24,10 @@ export default function Login() {
     try {
       const user = await login(form.email, form.password)
 
-      if (user.role === 'tailor') {
+      const role = user.role?.toLowerCase()
+      if (role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else if (role === 'tailor') {
         navigate('/tailor', { replace: true })
       } else {
         navigate(from || '/', { replace: true })

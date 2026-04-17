@@ -1,0 +1,343 @@
+/* =========================================================
+   Auth Pages — Login & Signup
+   Matches Figma design: navy brand panel + cream form card
+   ========================================================= */
+
+.auth-page {
+  display: flex;
+  min-height: 100vh;
+  font-family: var(--font-body);
+}
+
+/* ── Left Brand Panel ─────────────────────────────────── */
+.auth-brand {
+  position: relative;
+  width: 420px;
+  min-width: 360px;
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 52px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.auth-brand::before {
+  content: '';
+  position: absolute;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: var(--crimson);
+  opacity: 0.08;
+  bottom: -80px;
+  left: -60px;
+  pointer-events: none;
+}
+
+.auth-brand::after {
+  content: '';
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: var(--gold);
+  opacity: 0.06;
+  top: -40px;
+  right: -60px;
+  pointer-events: none;
+}
+
+.auth-brand__top-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--gold);
+}
+
+.auth-brand__bottom-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gold);
+}
+
+.auth-brand__logo {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 52px;
+}
+
+.auth-brand__logo-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+}
+
+.auth-brand__logo-dot {
+  position: absolute;
+  top: 14px; left: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--gold);
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-brand__logo-letter {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.auth-brand__title {
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 4px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.auth-brand__subtitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 3px;
+  margin-bottom: 24px;
+}
+
+.auth-brand__divider {
+  width: 56px;
+  height: 2px;
+  background: var(--gold);
+  margin-bottom: 20px;
+}
+
+.auth-brand__tagline {
+  font-size: 14px;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.auth-brand__desc {
+  font-size: 12px;
+  color: rgba(255,255,255,0.38);
+  line-height: 1.8;
+}
+
+/* ── Right Form Area ──────────────────────────────────── */
+.auth-form-area {
+  flex: 1;
+  background: #FAF7F2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.auth-card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 40px rgba(26,16,8,0.10);
+  padding: 52px 48px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.auth-card__eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-light);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.auth-card__heading {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 20px;
+}
+
+.auth-card__accent {
+  width: 44px;
+  height: 3px;
+  background: var(--gold);
+  margin-bottom: 28px;
+}
+
+/* ── Role Tabs ────────────────────────────────────────── */
+.auth-role-tabs {
+  display: flex;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1.5px solid var(--cream-dark);
+  margin-bottom: 24px;
+}
+
+.auth-role-tab {
+  flex: 1;
+  padding: 12px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: var(--white);
+  color: var(--text-light);
+  transition: var(--transition);
+}
+
+.auth-role-tab.active {
+  background: var(--crimson);
+  color: var(--white);
+}
+
+/* ── Form Fields ──────────────────────────────────────── */
+.auth-field {
+  margin-bottom: 16px;
+}
+
+.auth-field__label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-light);
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.auth-field__input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1.5px solid #D9D0C1;
+  border-radius: 8px;
+  background: var(--white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-dark);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.auth-field__input::placeholder {
+  color: #C4B8A5;
+}
+
+.auth-field__input:focus {
+  border-color: var(--crimson);
+}
+
+.auth-forgot {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  margin-top: -8px;
+}
+
+.auth-forgot a,
+.auth-forgot button {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--crimson);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font-body);
+}
+
+/* ── Submit Button ────────────────────────────────────── */
+.auth-submit {
+  width: 100%;
+  height: 52px;
+  background: var(--crimson);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: background 0.2s;
+}
+
+.auth-submit:hover:not(:disabled) {
+  background: var(--crimson-light);
+}
+
+.auth-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ── Divider ──────────────────────────────────────────── */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.auth-divider__line {
+  flex: 1;
+  height: 1px;
+  background: #D9D0C1;
+}
+
+.auth-divider__text {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+/* ── Footer Link ──────────────────────────────────────── */
+.auth-footer {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.auth-footer a {
+  color: var(--crimson);
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* ── Error ────────────────────────────────────────────── */
+.auth-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .auth-brand {
+    display: none;
+  }
+
+  .auth-card {
+    padding: 36px 28px;
+  }
+}

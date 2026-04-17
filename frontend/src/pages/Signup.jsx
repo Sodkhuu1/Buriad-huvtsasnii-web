@@ -7,10 +7,10 @@ export default function Signup() {
   const { register } = useAuth()
   const navigate = useNavigate()
 
-  const [role, setRole]       = useState('customer')
-  const [form, setForm]       = useState({ full_name: '', email: '', phone: '', password: '', confirm: '' })
+  const [role, setRole] = useState('customer')
+  const [form, setForm] = useState({ full_name: '', email: '', phone: '', password: '', confirm: '' })
   const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState('')
+  const [error, setError] = useState('')
 
   const handle = (e) => setForm(p => ({ ...p, [e.target.name]: e.target.value }))
 
@@ -24,9 +24,9 @@ export default function Signup() {
     try {
       const user = await register({
         full_name: form.full_name,
-        email:     form.email,
-        phone:     form.phone,
-        password:  form.password,
+        email: form.email,
+        phone: form.phone,
+        password: form.password,
         role,
       })
 
@@ -73,24 +73,6 @@ export default function Signup() {
           <p className="auth-card__eyebrow">Шинэ бүртгэл</p>
           <h2 className="auth-card__heading">Бүртгүүлэх</h2>
           <div className="auth-card__accent" />
-
-          {/* Role toggle */}
-          <div className="auth-role-tabs">
-            <button
-              type="button"
-              className={`auth-role-tab${role === 'customer' ? ' active' : ''}`}
-              onClick={() => setRole('customer')}
-            >
-              Харилцагч
-            </button>
-            <button
-              type="button"
-              className={`auth-role-tab${role === 'tailor' ? ' active' : ''}`}
-              onClick={() => setRole('tailor')}
-            >
-              Оёдолчин
-            </button>
-          </div>
 
           <form onSubmit={submit}>
             <div className="auth-field">

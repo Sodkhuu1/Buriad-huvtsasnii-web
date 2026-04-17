@@ -13,6 +13,7 @@ const garmentRoutes     = require('./routes/garments.routes')
 const tailorRoutes      = require('./routes/tailors.routes')
 const orderRoutes       = require('./routes/orders.routes')
 const tailorDashRoutes  = require('./routes/tailor.routes')
+const adminRoutes       = require('./routes/admin.routes')
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +31,7 @@ app.use('/api/garments', garmentRoutes)
 app.use('/api/tailors',  tailorRoutes)
 app.use('/api/orders',   orderRoutes)
 app.use('/api/tailor',   tailorDashRoutes)
+app.use('/api/admin',    adminRoutes)
 
 // Health check — useful to test if the server is running
 app.get('/api/health', (req, res) => {
