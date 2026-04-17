@@ -7,6 +7,7 @@
 //   - call logout()
 
 import { createContext, useContext, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { api } from '../api'
 
 const AuthContext = createContext(null)
@@ -22,7 +23,7 @@ export function AuthProvider({ children }) {
     const data = await api.post('/auth/login', { email, password })
     localStorage.setItem('token', data.token)
     localStorage.setItem('user', JSON.stringify(data.user))
-    setUser(data.user)
+    flushSync(() => setUser(data.user))
     return data.user
   }
 
@@ -30,7 +31,7 @@ export function AuthProvider({ children }) {
     const data = await api.post('/auth/register', payload)
     localStorage.setItem('token', data.token)
     localStorage.setItem('user', JSON.stringify(data.user))
-    setUser(data.user)
+    flushSync(() => setUser(data.user))
     return data.user
   }
 

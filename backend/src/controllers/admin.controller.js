@@ -1,5 +1,6 @@
 // admin.controller.js — Системийн администраторын API
 
+const bcrypt = require('bcryptjs')
 const pool = require('../db')
 const { createError } = require('../middleware/errorHandler')
 
@@ -185,6 +186,40 @@ const getTailors = async (req, res, next) => {
   }
 }
 
+// ─── POST /api/admin/tailors ──────────────────────────────────────────────
+const createTailor = async (req, res, next) => {
+  try {
+    const { full_name, email, phone, password, business_name, specialization } = req.body
+
+    if (!full_name || !email || !password) {
+      return next(createError(400, 'Нэр, и-мэйл, нууц үг заавал шаардлагатай'))
+    }
+
+    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email])
+    if (existing.rows.length) return next(createError(409, 'И-мэйл аль хэдийн бүртгэлтэй байна'))
+
+    const passwordHash = await bcrypt.hash(password, 10)
+
+    const userResult = await pool.query(
+      `INSERT INTO users (full_name, email, phone, password_hash, role)
+       VALUES ($1, $2, $3, $4, 'tailor')
+       RETURNING id, full_name, email, phone, role, status, created_at`,
+      [full_name, email, phone || null, passwordHash]
+    )
+    const newUser = userResult.rows[0]
+
+    await pool.query(
+      `INSERT INTO tailor_profiles (user_id, business_name, specialization)
+       VALUES ($1, $2, $3)`,
+      [newUser.id, business_name || null, specialization || null]
+    )
+
+    res.status(201).json({ success: true, tailor: { ...newUser, business_name, specialization, verified: false, order_count: 0 } })
+  } catch (err) {
+    next(err)
+  }
+}
+
 // ─── PUT /api/admin/tailors/:id/verify ────────────────────────────────────
 const verifyTailor = async (req, res, next) => {
   try {
@@ -208,5 +243,5 @@ const verifyTailor = async (req, res, next) => {
 
 module.exports = {
   getStats, getUsers, getRecentUsers, updateUserStatus,
-  getAllOrders, getTailors, verifyTailor,
+  getAllOrders, getTailors, createTailor, verifyTailor,
 }

@@ -3,8 +3,9 @@ import { useAuth } from '../../context/AuthContext'
 import './TailorLayout.css'
 
 const navItems = [
-  { path: '/tailor',        label: 'Хяналтын самбар', icon: '▦', end: true },
-  { path: '/tailor/orders', label: 'Захиалгууд',       icon: '≡' },
+  { path: '/tailor',          label: 'Хяналтын самбар', icon: '▦', end: true },
+  { path: '/tailor/orders',   label: 'Захиалгууд',       icon: '≡' },
+  { path: '/tailor/designs',  label: 'Загварууд',         icon: '✂' },
 ]
 
 export default function TailorLayout() {

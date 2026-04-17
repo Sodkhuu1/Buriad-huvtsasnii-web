@@ -2,15 +2,21 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
+import MeasurementGuide from '../components/MeasurementGuide'
 import './Zahialga.css'
 
-const STEPS = ['Загвар', 'Хэмжээс', 'Батлах']
+const STEPS = ['Загвар', 'Хэмжээс', 'Баталгаажуулах']
 
 const EMPTY_MEASUREMENTS = {
   height: '', chest: '', waist: '', hip: '', sleeve: '', shoulder: '',
 }
 
-// Auth Modal 
+const MEASURE_LABELS = {
+  height: 'Өндөр', chest: 'Цээж', waist: 'Бүсэлхий',
+  hip: 'Ташаа', sleeve: 'Гарын урт', shoulder: 'Мөрний өргөн',
+}
+
+// ─── Auth Modal ───────────────────────────────────────────────────────────────
 
 function AuthModal({ onSuccess, onClose }) {
   const { login, register } = useAuth()
@@ -33,7 +39,6 @@ function AuthModal({ onSuccess, onClose }) {
       } else {
         user = await register({ ...form, role: 'customer' })
       }
-      // Оёдолчин нэвтэрвэл шууд dashboard руу явна
       if (user.role === 'tailor') {
         navigate('/tailor', { replace: true })
         return
@@ -50,7 +55,6 @@ function AuthModal({ onSuccess, onClose }) {
     <div className="auth-overlay" onClick={onClose}>
       <div className="auth-modal" onClick={e => e.stopPropagation()}>
         <button className="auth-modal__close" onClick={onClose}>✕</button>
-
         <h2 className="auth-modal__title">Захиалга өгөхийн тулд нэвтэрнэ үү</h2>
         <p className="auth-modal__sub">Бүртгэл үүсгэх эсвэл нэвтэрч захиалгаа дуусгана уу.</p>
 
@@ -68,9 +72,7 @@ function AuthModal({ onSuccess, onClose }) {
           )}
           <input name="email" type="email" placeholder="И-мэйл" value={form.email} onChange={handle} required className="auth-modal__input" />
           <input name="password" type="password" placeholder="Нууц үг" value={form.password} onChange={handle} required className="auth-modal__input" />
-
           {error && <p className="auth-modal__error">{error}</p>}
-
           <button type="submit" className="btn-primary auth-modal__submit" disabled={loading}>
             {loading ? 'Түр хүлээнэ үү...' : tab === 'login' ? 'Нэвтрэх' : 'Бүртгүүлэх'}
           </button>
@@ -80,33 +82,33 @@ function AuthModal({ onSuccess, onClose }) {
   )
 }
 
-//Main component
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Zahialga() {
   const { user } = useAuth()
 
-  const [step, setStep] = useState(0)
+  const [step, setStep]                   = useState(0)
   const [selectedDesign, setSelectedDesign] = useState(null)
-  const [measurements, setMeasurements] = useState(EMPTY_MEASUREMENTS)
-  const [submitted, setSubmitted] = useState(false)
+  const [measurements, setMeasurements]   = useState(EMPTY_MEASUREMENTS)
+  const [customNote, setCustomNote]       = useState('')
+  const [submitted, setSubmitted]         = useState(false)
   const [submittedOrder, setSubmittedOrder] = useState(null)
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors]               = useState({})
   const [showAuthModal, setShowAuthModal] = useState(false)
 
-  // API data
-  const [designs, setDesigns] = useState([])
+  const [designs, setDesigns]             = useState([])
   const [loadingDesigns, setLoadingDesigns] = useState(true)
   const [submitLoading, setSubmitLoading] = useState(false)
-  const [apiError, setApiError] = useState('')
-
+  const [apiError, setApiError]           = useState('')
 
   useEffect(() => {
     api.get('/garments')
       .then(data => setDesigns(data.garments))
-      .catch(() => setApiError('Загварын мэдээлэл татахад алдаа гарлаа'))
+      .catch(err => setApiError(err.message || 'Загварын мэдээлэл татахад алдаа гарлаа'))
       .finally(() => setLoadingDesigns(false))
   }, [])
 
+  // ── Navigation ──────────────────────────────────────────────────────────────
 
   const goNext = () => {
     if (step === 0 && !selectedDesign) { setErrors({ design: 'Загвар сонгоно уу' }); return }
@@ -126,13 +128,10 @@ export default function Zahialga() {
     setErrors(p => ({ ...p, [e.target.name]: undefined }))
   }
 
-  // Submit 
+  // ── Submit ──────────────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
-    if (!user) {
-      setShowAuthModal(true)
-      return
-    }
+    if (!user) { setShowAuthModal(true); return }
     await doSubmit()
   }
 
@@ -142,7 +141,9 @@ export default function Zahialga() {
     try {
       const data = await api.post('/orders', {
         design_id: selectedDesign.id,
+        tailor_id: selectedDesign.tailor_id,
         measurements,
+        custom_note: customNote || undefined,
       })
       setSubmittedOrder(data.order)
       setSubmitted(true)
@@ -154,11 +155,12 @@ export default function Zahialga() {
   }
 
   const reset = () => {
-    setStep(0); setSelectedDesign(null); setMeasurements(EMPTY_MEASUREMENTS)
+    setStep(0); setSelectedDesign(null)
+    setMeasurements(EMPTY_MEASUREMENTS); setCustomNote('')
     setSubmitted(false); setSubmittedOrder(null); setErrors({})
   }
 
-  // Success screen 
+  // ── Success screen ──────────────────────────────────────────────────────────
 
   if (submitted && submittedOrder) {
     return (
@@ -170,18 +172,33 @@ export default function Zahialga() {
             Таны захиалга амжилттай илгээгдлээ.<br />
             Оёдолчин тантай удахгүй холбогдох болно.
           </p>
-          <div className="zahialga-success__summary">
-            <span>{selectedDesign.name}</span>
-            <span>·</span>
-            <span>#{submittedOrder.order_number}</span>
+          <div className="zahialga-success__details">
+            <div className="zahialga-success__row">
+              <span>Захиалгын дугаар</span>
+              <strong>#{submittedOrder.order_number}</strong>
+            </div>
+            <div className="zahialga-success__row">
+              <span>Загвар</span>
+              <strong>{selectedDesign.name}</strong>
+            </div>
+            {selectedDesign.tailor_name && (
+              <div className="zahialga-success__row">
+                <span>Оёдолчин</span>
+                <strong>{selectedDesign.tailor_name}</strong>
+              </div>
+            )}
+            <div className="zahialga-success__row">
+              <span>Үнэ</span>
+              <strong>{Number(submittedOrder.total_amount).toLocaleString()}₮</strong>
+            </div>
           </div>
-          <button className="btn-primary" onClick={reset}>Шинэ захиалга</button>
+          <button className="btn-primary" onClick={reset}>Шинэ захиалга өгөх</button>
         </div>
       </main>
     )
   }
 
-  // Main page 
+  // ── Main render ─────────────────────────────────────────────────────────────
 
   return (
     <main className="zahialga-page">
@@ -217,14 +234,19 @@ export default function Zahialga() {
 
         {apiError && <div className="zahialga-api-error">{apiError}</div>}
 
-        {/* ── STEP 0: Загвар сонгох ─────────────────────────────────────── */}
+        {/* ── STEP 0: Загвар сонгох ──────────────────────────────────────── */}
         {step === 0 && (
           <div className="zahialga-section">
             <h2 className="zahialga-section__title">Загвар сонгоно уу</h2>
+            <p className="zahialga-section__hint">
+              Оёдолчдын оруулсан загваруудаас сонгоно уу. Загвар бүр оёдолчны нэртэй хамт харагдана.
+            </p>
             {errors.design && <p className="zahialga-error">{errors.design}</p>}
 
             {loadingDesigns ? (
               <div className="zahialga-loading">Ачааллаж байна...</div>
+            ) : designs.length === 0 ? (
+              <div className="zahialga-empty">Одоогоор загвар оруулаагүй байна.</div>
             ) : (
               <div className="design-grid">
                 {designs.map(d => (
@@ -234,13 +256,20 @@ export default function Zahialga() {
                     onClick={() => { setSelectedDesign(d); setErrors({}) }}
                   >
                     <div className="design-card__img-wrap">
-                      <img src={d.image_url} alt={d.name} className="design-card__img" />
+                      {d.image_url ? (
+                        <img src={d.image_url} alt={d.name} className="design-card__img" />
+                      ) : (
+                        <div className="design-card__img design-card__img--placeholder">✂</div>
+                      )}
                       {selectedDesign?.id === d.id && <div className="design-card__check">✓</div>}
                     </div>
                     <div className="design-card__body">
-                      <span className="design-card__category">{d.category_name} · {d.audience}</span>
+                      {d.category_name && (
+                        <span className="design-card__category">{d.category_name}{d.audience ? ` · ${d.audience}` : ''}</span>
+                      )}
                       <h3 className="design-card__name">{d.name}</h3>
-                      <p className="design-card__desc">{d.ceremonial_use}</p>
+                      {d.ceremonial_use && <p className="design-card__desc">{d.ceremonial_use}</p>}
+                      {d.tailor_name && <p className="design-card__tailor">Оёдолчин: {d.tailor_name}</p>}
                       <span className="design-card__price">{Number(d.base_price).toLocaleString()}₮-с эхлэн</span>
                     </div>
                   </button>
@@ -255,80 +284,72 @@ export default function Zahialga() {
           <div className="zahialga-section">
             <h2 className="zahialga-section__title">Биеийн хэмжээс оруулах</h2>
             <p className="zahialga-section__hint">
-              Бүх хэмжээсийг сантиметрээр оруулна уу.
+              Хэмжээс бүрийг дарж заавар харна уу. Бүх хэмжээсийг сантиметрээр оруулна.
             </p>
-            <div className="measure-grid">
-              {[
-                { name: 'height', label: 'Өндөр', icon: '↕', hint: 'Толгойноос хөлийн ул хүртэл' },
-                { name: 'chest', label: 'Цээж', icon: '○', hint: 'Цээжний хамгийн өргөн хэсэг' },
-                { name: 'waist', label: 'Бүсэлхий', icon: '○', hint: 'Хамгийн нарийн хэсэг' },
-                { name: 'hip', label: 'Ташаа', icon: '○', hint: 'Ташааны хамгийн өргөн хэсэг' },
-                { name: 'sleeve', label: 'Гарын урт', icon: '↔', hint: 'Мөрнөөс бугуй хүртэл' },
-                { name: 'shoulder', label: 'Мөрний өргөн', icon: '↔', hint: 'Мөрний хоорондох зай' },
-              ].map(field => (
-                <div key={field.name} className="measure-field">
-                  <label className="measure-field__label">
-                    <span className="measure-field__icon">{field.icon}</span>
-                    {field.label}
-                  </label>
-                  <div className="measure-field__input-wrap">
-                    <input
-                      type="number"
-                      name={field.name}
-                      value={measurements[field.name]}
-                      onChange={handleMeasurement}
-                      placeholder="0"
-                      min="1"
-                      className={`measure-field__input${errors[field.name] ? ' measure-field__input--error' : ''}`}
-                    />
-                    <span className="measure-field__unit">см</span>
-                  </div>
-                  <span className="measure-field__hint">{field.hint}</span>
-                  {errors[field.name] && <span className="zahialga-error">{errors[field.name]}</span>}
-                </div>
-              ))}
-            </div>
+            <MeasurementGuide
+              measurements={measurements}
+              errors={errors}
+              onChange={handleMeasurement}
+            />
           </div>
         )}
 
-        {/* ── STEP 2: Батлах ────────────────────────────────────────────── */}
+        {/* ── STEP 2: Баталгаажуулах ────────────────────────────────────── */}
         {step === 2 && (
           <div className="zahialga-section">
             <h2 className="zahialga-section__title">Захиалгаа шалгаад батлаарай</h2>
+            <p className="zahialga-section__hint">
+              Бүх мэдээллийг нягталж үзээд захиалгаа илгээнэ үү.
+            </p>
 
             <div className="confirm-grid">
-
+              {/* Сонгосон загвар */}
               <div className="confirm-card">
-                <h3 className="confirm-card__title">Сонгосон загвар</h3>
+                <h3 className="confirm-card__title">Загвар</h3>
                 <div className="confirm-card__design">
-                  <img src={selectedDesign.image_url} alt={selectedDesign.name} className="confirm-card__img" />
+                  {selectedDesign.image_url ? (
+                    <img src={selectedDesign.image_url} alt={selectedDesign.name} className="confirm-card__img" />
+                  ) : (
+                    <div className="confirm-card__img confirm-card__img--placeholder">✂</div>
+                  )}
                   <div>
                     <p className="confirm-card__design-name">{selectedDesign.name}</p>
-                    <p className="confirm-card__design-cat">{selectedDesign.category_name}</p>
-                    <p className="confirm-card__price">{Number(selectedDesign.base_price).toLocaleString()}₮-с эхлэн</p>
+                    {selectedDesign.category_name && <p className="confirm-card__design-cat">{selectedDesign.category_name}</p>}
+                    {selectedDesign.tailor_name && <p className="confirm-card__design-tailor">Оёдолчин: {selectedDesign.tailor_name}</p>}
+                    <p className="confirm-card__price">{Number(selectedDesign.base_price).toLocaleString()}₮</p>
                   </div>
                 </div>
               </div>
 
+              {/* Хэмжээс */}
               <div className="confirm-card">
                 <h3 className="confirm-card__title">Хэмжээс</h3>
                 <div className="confirm-measurements">
                   {Object.entries(measurements).map(([key, val]) => (
                     <div key={key} className="confirm-measurement-row">
-                      <span className="confirm-measurement-key">
-                        {{ height: 'Өндөр', chest: 'Цээж', waist: 'Бүсэлхий', hip: 'Ташаа', sleeve: 'Гарын урт', shoulder: 'Мөрний өргөн' }[key]}
-                      </span>
+                      <span className="confirm-measurement-key">{MEASURE_LABELS[key]}</span>
                       <span className="confirm-measurement-val">{val} см</span>
                     </div>
                   ))}
                 </div>
               </div>
+            </div>
 
+            {/* Нэмэлт тайлбар */}
+            <div className="confirm-note-input">
+              <label className="confirm-note-input__label">Нэмэлт тайлбар, хүсэлт (заавал биш)</label>
+              <textarea
+                className="confirm-note-input__textarea"
+                value={customNote}
+                onChange={e => setCustomNote(e.target.value)}
+                placeholder="Жишээ нь: Хатуу торгон материал хүсч байна, улаан өнгөтэй..."
+                rows={3}
+              />
             </div>
 
             <div className="confirm-note">
               {user
-                ? <p>Та захиалгаа баталсны дараа оёдолчин таны захиалгыг хянаж, үнэ болон нарийвчилсан мэдээллийг тантай тохирно.</p>
+                ? <p>Та захиалгаа баталсны дараа оёдолчин таны захиалгыг хянаж, нарийвчилсан үнэ болон хугацааг тантай тохирно.</p>
                 : <p>Захиалга илгээхийн тулд нэвтрэх шаардлагатай. "Захиалга илгээх" дарахад нэвтрэх цонх нээгдэнэ.</p>
               }
             </div>

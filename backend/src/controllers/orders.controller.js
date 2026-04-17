@@ -13,13 +13,13 @@ const createOrder = async (req, res, next) => {
   try {
     await client.query('BEGIN')
 
-    const { design_id, material_option_id, measurements, custom_note } = req.body
+    const { design_id, tailor_id, material_option_id, measurements, custom_note } = req.body
     const customer_id = req.user.id
 
     // ── Validate input ────────────────────────────────────────────────────────
 
-    if (!design_id || !measurements) {
-      return next(createError(400, 'design_id and measurements are required'))
+    if (!design_id || !tailor_id || !measurements) {
+      return next(createError(400, 'design_id, tailor_id and measurements are required'))
     }
 
     const requiredMeasurements = ['height', 'chest', 'waist', 'hip', 'sleeve', 'shoulder']
@@ -59,10 +59,10 @@ const createOrder = async (req, res, next) => {
     // ── Create the order ──────────────────────────────────────────────────────
 
     const orderResult = await client.query(
-      `INSERT INTO orders (order_number, customer_id, status, subtotal, total_amount)
-       VALUES ($1, $2, 'submitted', $3, $3)
+      `INSERT INTO orders (order_number, customer_id, tailor_id, status, subtotal, total_amount)
+       VALUES ($1, $2, $3, 'submitted', $4, $4)
        RETURNING id, order_number, status, total_amount, created_at`,
-      [orderNumber, customer_id, unitPrice]
+      [orderNumber, customer_id, tailor_id, unitPrice]
     )
     const order = orderResult.rows[0]
 
@@ -124,9 +124,9 @@ const getMyOrders = async (req, res, next) => {
          u.full_name AS tailor_name,
          gd.name    AS design_name
        FROM orders o
-       JOIN users u ON u.id = o.tailor_id
-       JOIN order_items oi ON oi.order_id = o.id
-       JOIN garment_designs gd ON gd.id = oi.design_id
+       LEFT JOIN users u ON u.id = o.tailor_id
+       LEFT JOIN order_items oi ON oi.order_id = o.id
+       LEFT JOIN garment_designs gd ON gd.id = oi.design_id
        WHERE o.customer_id = $1
        ORDER BY o.created_at DESC`,
       [req.user.id]

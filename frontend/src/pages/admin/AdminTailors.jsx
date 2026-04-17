@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../api'
-import { USER_STATUS_LABEL, userStatusBadgeClass, fmtDate } from './adminUtils'
+import { USER_STATUS_LABEL, userStatusBadgeClass } from './adminUtils'
+
+const EMPTY_FORM = { full_name: '', email: '', phone: '', password: '', business_name: '', specialization: '' }
 
 export default function AdminTailors() {
   const [tailors, setTailors]         = useState([])
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState('')
   const [actionLoading, setActionLoading] = useState(null)
+  const [showModal, setShowModal]     = useState(false)
+  const [form, setForm]               = useState(EMPTY_FORM)
+  const [formError, setFormError]     = useState('')
+  const [formLoading, setFormLoading] = useState(false)
 
   useEffect(() => {
     api.get('/admin/tailors')
@@ -29,6 +35,24 @@ export default function AdminTailors() {
     }
   }
 
+  const handleField = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }))
+
+  const submitCreate = async e => {
+    e.preventDefault()
+    setFormLoading(true)
+    setFormError('')
+    try {
+      const d = await api.post('/admin/tailors', form)
+      setTailors(prev => [d.tailor, ...prev])
+      setShowModal(false)
+      setForm(EMPTY_FORM)
+    } catch (err) {
+      setFormError(err.message)
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
   const changeStatus = async (id, status) => {
     setActionLoading(id)
     try {
@@ -48,6 +72,44 @@ export default function AdminTailors() {
 
       {error && <div className="ad-error">{error}</div>}
 
+      {showModal && (
+        <div className="ad-modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="ad-modal" onClick={e => e.stopPropagation()}>
+            <h2 className="ad-modal__title">Оёдолчин нэмэх</h2>
+            <form onSubmit={submitCreate}>
+              {[
+                { name: 'full_name',      label: 'Овог нэр',          required: true  },
+                { name: 'email',          label: 'И-мэйл',            required: true  },
+                { name: 'phone',          label: 'Утас',              required: false },
+                { name: 'password',       label: 'Нууц үг',           required: true, type: 'password' },
+                { name: 'business_name',  label: 'Бизнесийн нэр',     required: false },
+                { name: 'specialization', label: 'Мэргэшлийн чиглэл', required: false },
+              ].map(f => (
+                <div key={f.name} className="ad-modal__field">
+                  <label>{f.label}</label>
+                  <input
+                    name={f.name}
+                    type={f.type || 'text'}
+                    value={form[f.name]}
+                    onChange={handleField}
+                    required={f.required}
+                  />
+                </div>
+              ))}
+              {formError && <div className="ad-error">{formError}</div>}
+              <div className="ad-modal__actions">
+                <button type="button" className="ad-btn ad-btn--neutral" onClick={() => setShowModal(false)}>
+                  Цуцлах
+                </button>
+                <button type="submit" className="ad-btn ad-btn--success" disabled={formLoading}>
+                  {formLoading ? 'Хадгалж байна...' : 'Нэмэх'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="ad-card">
         <div className="ad-section-header">
           <h2 className="ad-section-title">
@@ -58,6 +120,9 @@ export default function AdminTailors() {
               </span>
             )}
           </h2>
+          <button className="ad-btn ad-btn--success" onClick={() => setShowModal(true)}>
+            + Оёдолчин нэмэх
+          </button>
         </div>
 
         {loading ? (

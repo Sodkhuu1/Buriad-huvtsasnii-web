@@ -218,10 +218,24 @@
   margin-bottom: 12px;
 }
 
+.design-card__tailor {
+  font-size: 0.8rem;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
 .design-card__price {
   font-weight: 700;
   color: var(--crimson);
   font-size: 0.9rem;
+}
+
+.confirm-card__design-tailor {
+  font-size: 0.8rem;
+  color: var(--gold);
+  font-weight: 600;
+  margin: 2px 0 6px;
 }
 
 /* ── STEP 1: Measurements ───────────────────── */
@@ -339,6 +353,17 @@
   object-fit: cover;
   flex-shrink: 0;
   border: 2px solid var(--cream-dark);
+}
+
+.tailor-card__avatar--placeholder {
+  background: linear-gradient(135deg, var(--gold), var(--crimson));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--white);
 }
 
 .tailor-card__info {
@@ -516,6 +541,37 @@
   font-weight: 600;
 }
 
+.confirm-note-input {
+  margin-bottom: 20px;
+}
+
+.confirm-note-input__label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+
+.confirm-note-input__textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  resize: vertical;
+  min-height: 80px;
+  box-sizing: border-box;
+  transition: border-color var(--transition);
+}
+
+.confirm-note-input__textarea:focus {
+  outline: none;
+  border-color: var(--crimson);
+}
+
 .confirm-note {
   background: rgba(201, 162, 39, 0.08);
   border-left: 3px solid var(--gold);
@@ -524,6 +580,14 @@
   font-size: 0.88rem;
   color: var(--text-mid);
   margin-bottom: 8px;
+}
+
+.zahialga-empty {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.8;
 }
 
 /* ── Navigation buttons ─────────────────────── */
@@ -594,6 +658,28 @@
   flex-wrap: wrap;
 }
 
+.zahialga-success__details {
+  background: var(--white);
+  border: 1px solid rgba(201, 162, 39, 0.2);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.zahialga-success__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--cream-dark);
+  font-size: 0.9rem;
+}
+
+.zahialga-success__row:last-child { border-bottom: none; }
+
+.zahialga-success__row span { color: var(--text-light); }
+.zahialga-success__row strong { color: var(--navy); }
+
 /* ── Loading & error states ─────────────────── */
 
 .zahialga-loading {
@@ -619,10 +705,64 @@
   margin-top: 2px;
 }
 
+.tailor-card__intro {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 6px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tailor-card__designs {
+  font-size: 0.78rem;
+  color: var(--crimson);
+  font-weight: 600;
+}
+
 .confirm-tailor__business {
   font-size: 0.8rem;
   color: var(--text-light);
   margin: 2px 0;
+}
+
+.confirm-tailor__avatar--placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--crimson));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--white);
+  flex-shrink: 0;
+}
+
+.design-card__img--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream);
+  color: var(--text-light);
+  font-size: 2.5rem;
+}
+
+.confirm-card__img--placeholder {
+  width: 72px;
+  height: 72px;
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--text-light);
+  flex-shrink: 0;
 }
 
 /* ── Auth Modal ─────────────────────────────── */

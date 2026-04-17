@@ -183,4 +183,83 @@ const updateOrderStatus = async (req, res, next) => {
   }
 }
 
-module.exports = { getStats, getOrders, getOrderById, updateOrderStatus }
+// ─── GET /api/tailor/designs ─────────────────────────────────────────────────
+const getDesigns = async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      `SELECT gd.id, gd.name, gd.ceremonial_use, gd.silhouette,
+              gd.base_price, gd.image_url, gd.active, gd.created_at,
+              gc.id AS category_id, gc.name AS category_name
+       FROM garment_designs gd
+       LEFT JOIN garment_categories gc ON gc.id = gd.category_id
+       WHERE gd.tailor_id = $1
+       ORDER BY gd.created_at DESC`,
+      [req.user.id]
+    )
+    res.json({ success: true, designs: result.rows })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// ─── POST /api/tailor/designs ─────────────────────────────────────────────────
+const createDesign = async (req, res, next) => {
+  try {
+    const { name, category_id, base_price, ceremonial_use, silhouette, image_url } = req.body
+    if (!name || !base_price) {
+      return next(createError(400, 'Нэр болон үндсэн үнэ заавал шаардлагатай'))
+    }
+    const result = await pool.query(
+      `INSERT INTO garment_designs
+         (tailor_id, category_id, name, ceremonial_use, silhouette, base_price, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [req.user.id, category_id || null, name, ceremonial_use || null,
+       silhouette || null, base_price, image_url || null]
+    )
+    res.status(201).json({ success: true, design: result.rows[0] })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// ─── PUT /api/tailor/designs/:id ──────────────────────────────────────────────
+const updateDesign = async (req, res, next) => {
+  try {
+    const { name, category_id, base_price, ceremonial_use, silhouette, image_url, active } = req.body
+    const result = await pool.query(
+      `UPDATE garment_designs
+       SET name = COALESCE($1, name),
+           category_id = COALESCE($2, category_id),
+           base_price = COALESCE($3, base_price),
+           ceremonial_use = COALESCE($4, ceremonial_use),
+           silhouette = COALESCE($5, silhouette),
+           image_url = COALESCE($6, image_url),
+           active = COALESCE($7, active)
+       WHERE id = $8 AND tailor_id = $9
+       RETURNING *`,
+      [name, category_id, base_price, ceremonial_use, silhouette, image_url, active,
+       req.params.id, req.user.id]
+    )
+    if (!result.rows.length) return next(createError(404, 'Загвар олдсонгүй'))
+    res.json({ success: true, design: result.rows[0] })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// ─── DELETE /api/tailor/designs/:id ───────────────────────────────────────────
+const deleteDesign = async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      'DELETE FROM garment_designs WHERE id = $1 AND tailor_id = $2 RETURNING id',
+      [req.params.id, req.user.id]
+    )
+    if (!result.rows.length) return next(createError(404, 'Загвар олдсонгүй'))
+    res.json({ success: true })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports = { getStats, getOrders, getOrderById, updateOrderStatus, getDesigns, createDesign, updateDesign, deleteDesign }

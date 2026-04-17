@@ -11,6 +11,7 @@ import TailorLayout from './pages/tailor/TailorLayout'
 import TailorDashboard from './pages/tailor/TailorDashboard'
 import TailorOrders from './pages/tailor/TailorOrders'
 import TailorOrderDetail from './pages/tailor/TailorOrderDetail'
+import TailorDesigns from './pages/tailor/TailorDesigns'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
@@ -37,6 +38,7 @@ function App() {
         <Route index element={<TailorDashboard />} />
         <Route path="orders" element={<TailorOrders />} />
         <Route path="orders/:id" element={<TailorOrderDetail />} />
+        <Route path="designs" element={<TailorDesigns />} />
       </Route>
 
       {/* Customer сайт */}

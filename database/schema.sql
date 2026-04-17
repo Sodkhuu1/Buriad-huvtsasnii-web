@@ -62,7 +62,8 @@ CREATE TABLE tailor_profiles (
   verified        BOOLEAN DEFAULT FALSE,
   min_lead_days   INTEGER DEFAULT 7,
   max_lead_days   INTEGER DEFAULT 30,
-  introduction    TEXT
+  introduction    TEXT,
+  avatar_url      TEXT
 );
 
 -- Оёдолчний портфолио зургууд
@@ -142,11 +143,13 @@ CREATE TABLE garment_categories (
 
 CREATE TABLE garment_designs (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tailor_id       UUID REFERENCES users(id) ON DELETE CASCADE,
   category_id     UUID REFERENCES garment_categories(id) ON DELETE SET NULL,
   name            VARCHAR(150) NOT NULL,
   ceremonial_use  VARCHAR(200),
   silhouette      VARCHAR(100),
   base_price      NUMERIC(10,2) NOT NULL DEFAULT 0,
+  image_url       TEXT,
   active          BOOLEAN DEFAULT TRUE,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import './Navbar.css'
 
 const navLinks = [
@@ -10,9 +11,13 @@ const navLinks = [
 ]
 
 export default function Navbar() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
+
+  const handleLogout = () => { logout(); navigate('/') }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -53,10 +58,23 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Login button */}
-        <NavLink to="/login" className="navbar__login">
-          Нэвтрэх
-        </NavLink>
+        {/* Auth area */}
+        {user ? (
+          <div className="navbar__user">
+            <span className="navbar__user-name">{user.full_name}</span>
+            {user.role === 'admin' && (
+              <NavLink to="/admin" className="navbar__dashboard-link">Админ</NavLink>
+            )}
+            {user.role === 'tailor' && (
+              <NavLink to="/tailor" className="navbar__dashboard-link">Самбар</NavLink>
+            )}
+            <button className="navbar__logout" onClick={handleLogout}>Гарах</button>
+          </div>
+        ) : (
+          <NavLink to="/login" className="navbar__login">
+            Нэвтрэх
+          </NavLink>
+        )}
 
         {/* CTA button */}
         <NavLink to="/zahialga" className="navbar__cta btn-primary">
@@ -87,9 +105,24 @@ export default function Navbar() {
             {label}
           </NavLink>
         ))}
-        <NavLink to="/login" className="navbar__mobile-link">
-          Нэвтрэх
-        </NavLink>
+        {user ? (
+          <>
+            <div className="navbar__mobile-user">{user.full_name}</div>
+            {user.role === 'admin' && (
+              <NavLink to="/admin" className="navbar__mobile-link">Админ самбар</NavLink>
+            )}
+            {user.role === 'tailor' && (
+              <NavLink to="/tailor" className="navbar__mobile-link">Оёдолчны самбар</NavLink>
+            )}
+            <button className="navbar__mobile-link navbar__mobile-logout" onClick={handleLogout}>
+              Гарах
+            </button>
+          </>
+        ) : (
+          <NavLink to="/login" className="navbar__mobile-link">
+            Нэвтрэх
+          </NavLink>
+        )}
         <NavLink to="/zahialga" className="btn-primary navbar__mobile-cta">
           Захиалга өгөх
         </NavLink>

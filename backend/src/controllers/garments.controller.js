@@ -11,12 +11,17 @@ const getGarments = async (req, res, next) => {
         gd.ceremonial_use,
         gd.base_price,
         gd.image_url,
+        gd.tailor_id,
         gc.name  AS category_name,
-        gc.audience
+        gc.audience,
+        u.full_name AS tailor_name,
+        tp.business_name AS tailor_business
       FROM garment_designs gd
       LEFT JOIN garment_categories gc ON gc.id = gd.category_id
+      LEFT JOIN users u ON u.id = gd.tailor_id
+      LEFT JOIN tailor_profiles tp ON tp.user_id = gd.tailor_id
       WHERE gd.active = true
-      ORDER BY gd.created_at ASC
+      ORDER BY gd.created_at DESC
     `)
 
     res.json({ success: true, garments: result.rows })
@@ -44,4 +49,14 @@ const getMaterials = async (req, res, next) => {
   }
 }
 
-module.exports = { getGarments, getMaterials }
+// GET /api/garments/categories
+const getCategories = async (req, res, next) => {
+  try {
+    const result = await pool.query('SELECT id, name, audience FROM garment_categories ORDER BY name')
+    res.json({ success: true, categories: result.rows })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports = { getGarments, getMaterials, getCategories }
