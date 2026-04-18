@@ -11,6 +11,7 @@ export const STATUS_LABEL = {
   shipped:              'Хүргэлтэд',
   delivered:            'Хүргэгдсэн',
   completed:            'Дууссан',
+  cancelled:            'Цуцлагдсан',
 }
 
 export const statusBadgeClass = (status) =>

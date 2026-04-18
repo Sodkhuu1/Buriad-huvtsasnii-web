@@ -25,6 +25,7 @@ export const ORDER_STATUS_LABEL = {
   shipped:             'Илгээгдсэн',
   delivered:           'Хүргэгдсэн',
   completed:           'Дууссан',
+  cancelled:           'Цуцлагдсан',
 }
 
 export const roleBadgeClass = (role) => ({

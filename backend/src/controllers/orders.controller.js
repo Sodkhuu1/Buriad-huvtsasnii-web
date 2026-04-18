@@ -206,4 +206,53 @@ const getMyOrderById = async (req, res, next) => {
   }
 }
 
-module.exports = { createOrder, getMyOrders, getMyOrderById }
+// PATCH /api/orders/my/:id/cancel — хэрэглэгч өөрийн submitted захиалгаа цуцлах
+const cancelOrder = async (req, res, next) => {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    const { note } = req.body || {}
+
+    // Өөрийн захиалга мөн үү, одоогийн статус нь юу вэ
+    const orderResult = await client.query(
+      'SELECT id, status FROM orders WHERE id = $1 AND customer_id = $2',
+      [req.params.id, req.user.id]
+    )
+
+    if (!orderResult.rows.length) {
+      throw createError(404, 'Захиалга олдсонгүй')
+    }
+
+    const currentStatus = orderResult.rows[0].status
+
+    // Зөвхөн оёдолчин хүлээж аваагүй байхад цуцлах боломжтой
+    if (currentStatus !== 'submitted') {
+      throw createError(400, 'Зөвхөн хүлээгдэж буй захиалгыг цуцлах боломжтой')
+    }
+
+    const updated = await client.query(
+      `UPDATE orders
+       SET status = 'cancelled', updated_at = NOW()
+       WHERE id = $1
+       RETURNING id, order_number, status, total_amount, created_at`,
+      [req.params.id]
+    )
+
+    await client.query(
+      `INSERT INTO order_status_history (order_id, from_status, to_status, changed_by_id, note)
+       VALUES ($1, $2, 'cancelled', $3, $4)`,
+      [req.params.id, currentStatus, req.user.id, note || 'Захиалагч цуцаллаа']
+    )
+
+    await client.query('COMMIT')
+    res.json({ success: true, order: updated.rows[0] })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    next(err)
+  } finally {
+    client.release()
+  }
+}
+
+module.exports = { createOrder, getMyOrders, getMyOrderById, cancelOrder }

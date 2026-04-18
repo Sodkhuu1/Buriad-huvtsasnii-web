@@ -355,6 +355,7 @@
 .ad-badge--order-needs_clarification { background: #FFF7ED; color: #78350F; }
 .ad-badge--order-delivered           { background: #D1FAE5; color: #064E3B; }
 .ad-badge--order-draft               { background: #F3F4F6; color: #374151; }
+.ad-badge--order-cancelled           { background: #F3F4F6; color: #6B7280; }
 
 /* ── Action buttons ──────────────────────────────────────── */
 .ad-btn {

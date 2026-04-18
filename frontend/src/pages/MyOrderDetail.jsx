@@ -14,6 +14,8 @@ export default function MyOrderDetail() {
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [confirmCancel, setConfirmCancel] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
 
   useEffect(() => {
     api.get(`/orders/my/${id}`)
@@ -21,6 +23,23 @@ export default function MyOrderDetail() {
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }, [id])
+
+  // Цуцлах — зөвхөн submitted төлөвтэй үед
+  const handleCancel = async () => {
+    setCancelling(true)
+    setError('')
+    try {
+      await api.patch(`/orders/my/${id}/cancel`)
+      // статус болон түүхийг шинэчлэхийн тулд дахин татна
+      const data = await api.get(`/orders/my/${id}`)
+      setOrder(data.order)
+      setConfirmCancel(false)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setCancelling(false)
+    }
+  }
 
   if (loading) return <div className="mod-state">Ачааллаж байна...</div>
   if (error && !order) {
@@ -48,12 +67,51 @@ export default function MyOrderDetail() {
           <h1 className="mod-title">Захиалга #{order.order_number}</h1>
           <p className="mod-date">{formatDate(order.created_at)}</p>
         </div>
-        <span className={`co-badge mod-status ${statusBadgeClass(order.status)}`}>
-          {STATUS_LABEL[order.status] ?? order.status}
-        </span>
+        <div className="mod-header__right">
+          <span className={`co-badge mod-status ${statusBadgeClass(order.status)}`}>
+            {STATUS_LABEL[order.status] ?? order.status}
+          </span>
+          {order.status === 'submitted' && (
+            <button
+              className="mod-cancel-btn"
+              onClick={() => setConfirmCancel(true)}
+              disabled={cancelling}
+            >
+              Захиалга цуцлах
+            </button>
+          )}
+        </div>
       </div>
 
       {error && <div className="mod-error">{error}</div>}
+
+      {confirmCancel && (
+        <div className="mod-modal-overlay" onClick={() => !cancelling && setConfirmCancel(false)}>
+          <div className="mod-modal" onClick={e => e.stopPropagation()}>
+            <h3 className="mod-modal__title">Захиалгаа цуцлах уу?</h3>
+            <p className="mod-modal__text">
+              Энэ үйлдлийг буцаах боломжгүй. Оёдолчин танай захиалгыг хүлээж авах
+              хүртэл л цуцлах боломжтой.
+            </p>
+            <div className="mod-modal__actions">
+              <button
+                className="mod-modal__btn mod-modal__btn--ghost"
+                onClick={() => setConfirmCancel(false)}
+                disabled={cancelling}
+              >
+                Болих
+              </button>
+              <button
+                className="mod-modal__btn mod-modal__btn--danger"
+                onClick={handleCancel}
+                disabled={cancelling}
+              >
+                {cancelling ? 'Цуцалж байна...' : 'Тийм, цуцал'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mod-grid">
 

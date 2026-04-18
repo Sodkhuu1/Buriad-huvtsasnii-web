@@ -11,6 +11,7 @@ export const STATUS_LABEL = {
   delivered:            'Хүргэгдсэн',
   completed:            'Дууссан',
   rejected:             'Татгалзсан',
+  cancelled:            'Цуцлагдсан',
 }
 
 export const statusBadgeClass = (status) =>

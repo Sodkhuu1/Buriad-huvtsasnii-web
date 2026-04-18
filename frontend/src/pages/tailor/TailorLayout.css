@@ -195,6 +195,7 @@
 .td-badge--completed    { background: #F0FDF4; color: #166534; }
 .td-badge--rejected     { background: #FEF2F2; color: #7F1D1D; }
 .td-badge--needs_clarification { background: #FFF7ED; color: #78350F; }
+.td-badge--cancelled    { background: #F3F4F6; color: #6B7280; }
 
 /* ── Loading / empty ─────────────────────────────────────── */
 .td-loading {

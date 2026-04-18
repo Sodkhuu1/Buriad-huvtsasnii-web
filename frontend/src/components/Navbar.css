@@ -92,6 +92,7 @@
   color: rgba(245, 239, 224, 0.85);
   letter-spacing: 0.03em;
   transition: color 0.25s;
+  white-space: nowrap;
 }
 
 .navbar__link::after {
@@ -149,6 +150,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--cream);
+  white-space: nowrap;
 }
 
 .navbar__dashboard-link {
@@ -159,6 +161,7 @@
   border: 1px solid var(--gold);
   border-radius: 4px;
   transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
 }
 
 .navbar__dashboard-link:hover {
@@ -175,6 +178,7 @@
   cursor: pointer;
   padding: 4px 8px;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 
 .navbar__logout:hover {
@@ -210,6 +214,7 @@
   flex-shrink: 0;
   padding: 10px 22px;
   font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 /* Burger */
