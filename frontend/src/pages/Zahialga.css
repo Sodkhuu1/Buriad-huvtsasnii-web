@@ -680,6 +680,32 @@
 .zahialga-success__row span { color: var(--text-light); }
 .zahialga-success__row strong { color: var(--navy); }
 
+.zahialga-success__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.zahialga-success__secondary {
+  padding: 11px 22px;
+  background: transparent;
+  color: var(--text-mid);
+  border: 1.5px solid var(--cream-dark);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.zahialga-success__secondary:hover {
+  border-color: var(--crimson);
+  color: var(--crimson);
+}
+
 /* ── Loading & error states ─────────────────── */
 
 .zahialga-loading {

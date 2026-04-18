@@ -6,6 +6,8 @@ import HuvtsasniiUtga from './pages/HuvtsasniiUtga'
 import BidniinTuhaid from './pages/BidniinTuhaid'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import MyOrders from './pages/MyOrders'
+import MyOrderDetail from './pages/MyOrderDetail'
 import Footer from './components/Footer'
 import TailorLayout from './pages/tailor/TailorLayout'
 import TailorDashboard from './pages/tailor/TailorDashboard'
@@ -50,6 +52,8 @@ function App() {
             <Route path="/zahialga" element={<Zahialga />} />
             <Route path="/huvtsasnii-utga" element={<HuvtsasniiUtga />} />
             <Route path="/bidnii-tuhaid" element={<BidniinTuhaid />} />
+            <Route path="/my-orders" element={<MyOrders />} />
+            <Route path="/my-orders/:id" element={<MyOrderDetail />} />
           </Routes>
           <Footer />
         </div>

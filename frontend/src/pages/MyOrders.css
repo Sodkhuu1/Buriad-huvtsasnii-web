@@ -1,0 +1,215 @@
+.mo-wrap {
+  padding: 140px 24px 80px;
+  min-height: 100vh;
+}
+
+.mo-head { margin-bottom: 32px; }
+
+.mo-title {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  color: var(--navy);
+  margin: 0 0 6px;
+}
+
+.mo-sub {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.mo-error {
+  background: #FEF2F2;
+  color: #7F1D1D;
+  border: 1px solid #FECACA;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+}
+
+.mo-loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-light);
+}
+
+/* Filters */
+.mo-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.mo-filter {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1.5px solid var(--cream-dark);
+  background: var(--white);
+  color: var(--text-mid);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-body);
+}
+
+.mo-filter:hover {
+  border-color: var(--crimson);
+  color: var(--crimson);
+}
+
+.mo-filter--active {
+  background: var(--crimson);
+  border-color: var(--crimson);
+  color: var(--white);
+}
+
+/* Empty */
+.mo-empty {
+  text-align: center;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 48px 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.mo-empty__icon {
+  font-size: 2.4rem;
+  margin-bottom: 10px;
+}
+
+.mo-empty p {
+  color: var(--text-light);
+  margin: 0 0 18px;
+}
+
+.mo-empty__cta {
+  display: inline-block;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-light));
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.mo-empty__cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(139, 26, 42, 0.35);
+}
+
+/* Card list */
+.mo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
+  border: 1.5px solid transparent;
+}
+
+.mo-card:hover {
+  border-color: var(--crimson);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.mo-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mo-card__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mo-card__number {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.mo-card__design {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.mo-card__tailor {
+  font-size: 0.83rem;
+  color: var(--text-light);
+}
+
+.mo-card__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.mo-card__date {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.mo-card__amount {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.mo-card__arrow {
+  font-size: 1rem;
+  color: var(--crimson);
+  margin-top: 4px;
+}
+
+/* Status badges — shared with MyOrderDetail */
+.co-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.co-badge--draft               { background: #F3F4F6; color: #374151; }
+.co-badge--submitted           { background: #EEF2FF; color: #3730A3; }
+.co-badge--under_review        { background: #FFF7ED; color: #9A3412; }
+.co-badge--needs_clarification { background: #FFF7ED; color: #78350F; }
+.co-badge--accepted            { background: #ECFDF5; color: #065F46; }
+.co-badge--rejected            { background: #FEF2F2; color: #7F1D1D; }
+.co-badge--deposit_paid        { background: #F0FDF4; color: #14532D; }
+.co-badge--in_production       { background: #FEF3C7; color: #92400E; }
+.co-badge--ready               { background: #CFFAFE; color: #164E63; }
+.co-badge--shipped             { background: #EDE9FE; color: #4C1D95; }
+.co-badge--delivered           { background: #D1FAE5; color: #064E3B; }
+.co-badge--completed           { background: #F0FDF4; color: #166534; }
+
+@media (max-width: 600px) {
+  .mo-wrap  { padding: 110px 16px 60px; }
+  .mo-title { font-size: 1.7rem; }
+  .mo-card  { padding: 16px; }
+}

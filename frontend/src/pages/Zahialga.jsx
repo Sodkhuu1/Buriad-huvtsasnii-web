@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
 import MeasurementGuide from '../components/MeasurementGuide'
@@ -192,7 +192,14 @@ export default function Zahialga() {
               <strong>{Number(submittedOrder.total_amount).toLocaleString()}₮</strong>
             </div>
           </div>
-          <button className="btn-primary" onClick={reset}>Шинэ захиалга өгөх</button>
+          <div className="zahialga-success__actions">
+            <Link to={`/my-orders/${submittedOrder.id}`} className="btn-primary">
+              Захиалгаа харах
+            </Link>
+            <button className="zahialga-success__secondary" onClick={reset}>
+              Шинэ захиалга өгөх
+            </button>
+          </div>
         </div>
       </main>
     )

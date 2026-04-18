@@ -62,6 +62,9 @@ export default function Navbar() {
         {user ? (
           <div className="navbar__user">
             <span className="navbar__user-name">{user.full_name}</span>
+            {user.role === 'customer' && (
+              <NavLink to="/my-orders" className="navbar__dashboard-link">Миний захиалгууд</NavLink>
+            )}
             {user.role === 'admin' && (
               <NavLink to="/admin" className="navbar__dashboard-link">Админ</NavLink>
             )}
@@ -108,6 +111,9 @@ export default function Navbar() {
         {user ? (
           <>
             <div className="navbar__mobile-user">{user.full_name}</div>
+            {user.role === 'customer' && (
+              <NavLink to="/my-orders" className="navbar__mobile-link">Миний захиалгууд</NavLink>
+            )}
             {user.role === 'admin' && (
               <NavLink to="/admin" className="navbar__mobile-link">Админ самбар</NavLink>
             )}
