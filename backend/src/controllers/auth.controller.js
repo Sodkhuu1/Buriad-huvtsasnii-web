@@ -17,6 +17,30 @@ const generateToken = (user) => {
   );
 };
 
+// Set the JWT as an httpOnly cookie — keeps it out of JS reach (XSS-safe)
+// Matches JWT_EXPIRES_IN (default 7d) in milliseconds
+const AUTH_COOKIE_NAME = 'auth_token';
+const SEVEN_DAYS_MS    = 7 * 24 * 60 * 60 * 1000;
+
+const setAuthCookie = (res, token) => {
+  res.cookie(AUTH_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge:   SEVEN_DAYS_MS,
+    path:     '/',
+  });
+};
+
+const clearAuthCookie = (res) => {
+  res.clearCookie(AUTH_COOKIE_NAME, {
+    httpOnly: true,
+    secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path:     '/',
+  });
+};
+
 // POST /api/auth/register
 const register = async (req, res, next) => {
   try {
@@ -69,11 +93,11 @@ const register = async (req, res, next) => {
     }
 
     const token = generateToken(newUser);
+    setAuthCookie(res, token);
 
     res.status(201).json({
       success: true,
       message: 'Registered successfully',
-      token,
       user: newUser,
     });
   } catch (err) {
@@ -114,11 +138,11 @@ const login = async (req, res, next) => {
     }
 
     const token = generateToken(user);
+    setAuthCookie(res, token);
 
     res.json({
       success: true,
       message: 'Logged in successfully',
-      token,
       user: {
         id: user.id,
         full_name: user.full_name,
@@ -131,6 +155,12 @@ const login = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+// POST /api/auth/logout — clears the auth cookie
+const logout = (_req, res) => {
+  clearAuthCookie(res);
+  res.json({ success: true, message: 'Logged out' });
 };
 
 // GET /api/auth/me — get current logged-in user's info
@@ -151,4 +181,4 @@ const getMe = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getMe };
+module.exports = { register, login, logout, getMe, AUTH_COOKIE_NAME };

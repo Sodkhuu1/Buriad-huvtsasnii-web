@@ -19,13 +19,13 @@ const createOrder = async (req, res, next) => {
     // ── Validate input ────────────────────────────────────────────────────────
 
     if (!design_id || !tailor_id || !measurements) {
-      return next(createError(400, 'design_id, tailor_id and measurements are required'))
+      throw createError(400, 'design_id, tailor_id and measurements are required')
     }
 
     const requiredMeasurements = ['height', 'chest', 'waist', 'hip', 'sleeve', 'shoulder']
     for (const key of requiredMeasurements) {
       if (!measurements[key]) {
-        return next(createError(400, `Missing measurement: ${key}`))
+        throw createError(400, `Missing measurement: ${key}`)
       }
     }
 
@@ -36,7 +36,7 @@ const createOrder = async (req, res, next) => {
       [design_id]
     )
     if (!designResult.rows.length) {
-      return next(createError(404, 'Garment design not found'))
+      throw createError(404, 'Garment design not found')
     }
     const design = designResult.rows[0]
 
@@ -138,4 +138,72 @@ const getMyOrders = async (req, res, next) => {
   }
 }
 
-module.exports = { createOrder, getMyOrders }
+// GET /api/orders/my/:id — get one of the current user's orders (detail)
+const getMyOrderById = async (req, res, next) => {
+  try {
+    const orderResult = await pool.query(
+      `SELECT
+         o.id, o.order_number, o.status,
+         o.subtotal, o.delivery_fee, o.total_amount,
+         o.expected_delivery_at, o.created_at, o.updated_at,
+         u.id         AS tailor_id,
+         u.full_name  AS tailor_name,
+         u.phone      AS tailor_phone,
+         u.email      AS tailor_email,
+         tp.business_name AS tailor_business_name,
+         gd.name      AS design_name,
+         gd.image_url AS design_image_url,
+         gc.name      AS design_category,
+         oi.quantity,
+         oi.custom_note,
+         oi.unit_price,
+         mo.material_name,
+         mo.color AS material_color
+       FROM orders o
+       LEFT JOIN users u ON u.id = o.tailor_id
+       LEFT JOIN tailor_profiles tp ON tp.user_id = u.id
+       JOIN order_items oi ON oi.order_id = o.id
+       JOIN garment_designs gd ON gd.id = oi.design_id
+       LEFT JOIN garment_categories gc ON gc.id = gd.category_id
+       LEFT JOIN material_options mo ON mo.id = oi.material_option_id
+       WHERE o.id = $1 AND o.customer_id = $2`,
+      [req.params.id, req.user.id]
+    )
+
+    if (!orderResult.rows.length) {
+      return next(createError(404, 'Захиалга олдсонгүй'))
+    }
+
+    const measResult = await pool.query(
+      `SELECT sm.metric_code, sm.metric_value
+       FROM measurement_snapshots ms
+       JOIN snapshot_measurements sm ON sm.snapshot_id = ms.id
+       WHERE ms.order_id = $1`,
+      [req.params.id]
+    )
+
+    const measurements = {}
+    measResult.rows.forEach(r => { measurements[r.metric_code] = r.metric_value })
+
+    const historyResult = await pool.query(
+      `SELECT from_status, to_status, note, changed_at
+       FROM order_status_history
+       WHERE order_id = $1
+       ORDER BY changed_at ASC`,
+      [req.params.id]
+    )
+
+    res.json({
+      success: true,
+      order: {
+        ...orderResult.rows[0],
+        measurements,
+        history: historyResult.rows,
+      },
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports = { createOrder, getMyOrders, getMyOrderById }

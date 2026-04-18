@@ -3,6 +3,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const { errorHandler } = require('./middleware/errorHandler');
@@ -20,10 +21,17 @@ const PORT = process.env.PORT || 5000;
 
 // --- Middleware ---
 // cors: allows our React frontend (on port 5173) to call this backend (on port 5000)
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+// credentials: true is required so the browser will send/receive cookies
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true,
+}));
 
 // express.json(): lets us read JSON data from request body (req.body)
 app.use(express.json());
+
+// Parse cookies into req.cookies — used for httpOnly JWT auth
+app.use(cookieParser());
 
 // --- Routes ---
 app.use('/api/auth',    authRoutes)

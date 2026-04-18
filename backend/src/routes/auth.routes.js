@@ -4,14 +4,17 @@
 
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe } = require('../controllers/auth.controller');
+const { register, login, logout, getMe } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth');
 
-// POST /api/auth/register — create a new account
+// POST /api/auth/register — create a new account (sets auth cookie)
 router.post('/register', register);
 
-// POST /api/auth/login — log in and get a token
+// POST /api/auth/login — log in (sets auth cookie)
 router.post('/login', login);
+
+// POST /api/auth/logout — clear the auth cookie
+router.post('/logout', logout);
 
 // GET /api/auth/me — get my own user info (requires login)
 router.get('/me', protect, getMe);

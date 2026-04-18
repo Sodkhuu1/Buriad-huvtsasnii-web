@@ -1,27 +1,37 @@
 // auth.js — middleware that checks if the user is logged in
 //
 // How JWT auth works:
-// 1. User logs in → server gives them a "token" (a long string)
-// 2. User sends that token with every request in the header
-// 3. This middleware checks the token and attaches the user info to req.user
+// 1. User logs in → server sets an httpOnly cookie "auth_token"
+// 2. The browser sends the cookie automatically on every request
+// 3. This middleware verifies the cookie and attaches user info to req.user
+// 4. As a fallback (curl, Postman) we also accept "Authorization: Bearer <token>"
 
 const jwt = require('jsonwebtoken');
 const { createError } = require('./errorHandler');
 
-const protect = (req, res, next) => {
-  // The token comes in the Authorization header like: "Bearer <token>"
-  const authHeader = req.headers.authorization;
+const AUTH_COOKIE_NAME = 'auth_token';
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+const extractToken = (req) => {
+  if (req.cookies && req.cookies[AUTH_COOKIE_NAME]) {
+    return req.cookies[AUTH_COOKIE_NAME];
+  }
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.split(' ')[1];
+  }
+  return null;
+};
+
+const protect = (req, res, next) => {
+  const token = extractToken(req);
+
+  if (!token) {
     return next(createError(401, 'Not authorized, no token'));
   }
 
-  const token = authHeader.split(' ')[1];
-
   try {
-    // Verify the token using our secret key
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // attach user info to the request
+    req.user = decoded;
     next();
   } catch (err) {
     return next(createError(401, 'Not authorized, invalid token'));

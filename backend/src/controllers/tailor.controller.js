@@ -137,7 +137,7 @@ const updateOrderStatus = async (req, res, next) => {
     const { status: nextStatus, note } = req.body
 
     if (!nextStatus) {
-      return next(createError(400, 'status заавал шаардлагатай'))
+      throw createError(400, 'status заавал шаардлагатай')
     }
 
     // Одоогийн захиалга авах
@@ -147,14 +147,14 @@ const updateOrderStatus = async (req, res, next) => {
     )
 
     if (!orderResult.rows.length) {
-      return next(createError(404, 'Захиалга олдсонгүй'))
+      throw createError(404, 'Захиалга олдсонгүй')
     }
 
     const currentStatus = orderResult.rows[0].status
     const allowed = ALLOWED_TRANSITIONS[currentStatus] ?? []
 
     if (!allowed.includes(nextStatus)) {
-      return next(createError(400, `${currentStatus} → ${nextStatus} шилжих боломжгүй`))
+      throw createError(400, `${currentStatus} → ${nextStatus} шилжих боломжгүй`)
     }
 
     // Статус шинэчлэх

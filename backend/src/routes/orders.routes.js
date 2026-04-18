@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { createOrder, getMyOrders } = require('../controllers/orders.controller')
+const { createOrder, getMyOrders, getMyOrderById } = require('../controllers/orders.controller')
 const { protect } = require('../middleware/auth')
 
 // All order routes require login
@@ -11,5 +11,8 @@ router.post('/', createOrder)
 
 // GET /api/orders/my — get my orders
 router.get('/my', getMyOrders)
+
+// GET /api/orders/my/:id — get one of my orders (detail)
+router.get('/my/:id', getMyOrderById)
 
 module.exports = router
