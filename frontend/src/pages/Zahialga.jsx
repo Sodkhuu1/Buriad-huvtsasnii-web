@@ -216,15 +216,6 @@ export default function Zahialga() {
         />
       )}
 
-      {/* Header */}
-      <div className="zahialga-header ornament-bg">
-        <h1 className="zahialga-header__title section-title">Захиалга өгөх</h1>
-        <span className="gold-line" />
-        <p className="zahialga-header__sub section-subtitle">
-          Гурван алхмаар биеийн хэмжээсэндээ тохирсон буриад хувцас захиалаарай.
-        </p>
-      </div>
-
       {/* Step indicator */}
       <div className="zahialga-steps container">
         {STEPS.map((label, i) => (

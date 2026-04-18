@@ -29,8 +29,13 @@ export default function Navbar() {
     setMenuOpen(false)
   }, [location])
 
+  // Home has a dark hero under the navbar; other pages have light backgrounds,
+  // so the transparent navbar needs dark text until the user scrolls.
+  const isHome = location.pathname === '/'
+  const darkText = !scrolled && !isHome
+
   return (
-    <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}`}>
+    <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}${darkText ? ' navbar--dark-text' : ''}`}>
       <div className="navbar__inner container">
 
         {/* Logo */}

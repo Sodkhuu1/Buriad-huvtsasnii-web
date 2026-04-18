@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
+import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
 import Zahialga from './pages/Zahialga'
 import HuvtsasniiUtga from './pages/HuvtsasniiUtga'
@@ -28,7 +29,14 @@ function App() {
       <Route path="/signup" element={<Signup />} />
 
       {/* Admin dashboard */}
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute roles={['admin']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<AdminDashboard />} />
         <Route path="users"   element={<AdminUsers />} />
         <Route path="tailors" element={<AdminTailors />} />
@@ -36,7 +44,14 @@ function App() {
       </Route>
 
       {/* Tailor dashboard — өөрийн layout, navbar/footer байхгүй */}
-      <Route path="/tailor" element={<TailorLayout />}>
+      <Route
+        path="/tailor"
+        element={
+          <ProtectedRoute roles={['tailor']}>
+            <TailorLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<TailorDashboard />} />
         <Route path="orders" element={<TailorOrders />} />
         <Route path="orders/:id" element={<TailorOrderDetail />} />
@@ -52,8 +67,22 @@ function App() {
             <Route path="/zahialga" element={<Zahialga />} />
             <Route path="/huvtsasnii-utga" element={<HuvtsasniiUtga />} />
             <Route path="/bidnii-tuhaid" element={<BidniinTuhaid />} />
-            <Route path="/my-orders" element={<MyOrders />} />
-            <Route path="/my-orders/:id" element={<MyOrderDetail />} />
+            <Route
+              path="/my-orders"
+              element={
+                <ProtectedRoute roles={['customer']}>
+                  <MyOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-orders/:id"
+              element={
+                <ProtectedRoute roles={['customer']}>
+                  <MyOrderDetail />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
           <Footer />
         </div>

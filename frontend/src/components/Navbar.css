@@ -20,6 +20,18 @@
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
+/* Dark-text variant: transparent navbar over a light page background */
+.navbar--dark-text .navbar__logo-main { color: var(--navy); }
+.navbar--dark-text .navbar__link       { color: var(--text-mid); }
+.navbar--dark-text .navbar__link:hover,
+.navbar--dark-text .navbar__link--active { color: var(--crimson); }
+.navbar--dark-text .navbar__login      { color: var(--navy); }
+.navbar--dark-text .navbar__login:hover { background: rgba(13, 27, 42, 0.08); }
+.navbar--dark-text .navbar__user-name  { color: var(--text-dark); }
+.navbar--dark-text .navbar__logout     { color: var(--text-mid); }
+.navbar--dark-text .navbar__logout:hover { color: var(--crimson); }
+.navbar--dark-text .navbar__burger span { background: var(--navy); }
+
 .navbar__inner {
   display: flex;
   align-items: center;
