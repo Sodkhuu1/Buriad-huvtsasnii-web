@@ -6,11 +6,10 @@ import './GalleryPreview.css'
 
 export default function GalleryPreview() {
   const [garments, setGarments] = useState([])
-  const [loading, setLoading]   = useState(true)
+  const [loading, setLoading] = useState(true)
   const [tryOnGarment, setTryOnGarment] = useState(null)
 
   useEffect(() => {
-    // 4 shirheg l haruulna, buur ni Zahialga dr l haragdaarai
     api.get('/garments')
       .then(data => setGarments((data.garments || []).slice(0, 4)))
       .catch(() => setGarments([]))
@@ -21,50 +20,64 @@ export default function GalleryPreview() {
     <section className="gallery">
       <div className="gallery__bg" />
       <div className="container">
-        <h2 className="section-title" style={{ color: 'var(--cream)' }}>
-          Хувцасны цомог
-        </h2>
-        <span className="gold-line" />
-        <p className="section-subtitle" style={{ color: 'rgba(245,239,224,0.65)' }}>
-          Буриад хувцасны уламжлалт загваруудтай танилцаарай.
-        </p>
+        <div className="gallery__intro">
+          <div className="gallery__intro-copy">
+            <span className="section-eyebrow gallery__eyebrow">Lookbook</span>
+            <h2 className="section-title gallery__title">Дэнз дээрх загварын сонголтууд илүү редакцлаг, илүү итгэлтэй харагдана.</h2>
+            <span className="gold-line gallery__line" />
+            <p className="section-subtitle gallery__subtitle">
+              Оёдолчдын оруулсан загвар бүрийг нэгэн жигд танилцуулж, хэрэглэгчдэд сонголт хийхэд хялбар,
+              сонирхолтой харагдахаар зохион байгууллаа.
+            </p>
+          </div>
+
+          <div className="gallery__aside section-shell">
+            <p className="gallery__aside-label">Selected pieces</p>
+            <p className="gallery__aside-text">
+              Загвар харах, өмсөж үзэх, дараа нь шууд захиалгын урсгал руу шилжих холбоос одоо илүү тод болсон.
+            </p>
+            <Link to="/zahialga" className="btn-secondary gallery__aside-link">
+              Бүх загвар руу орох
+            </Link>
+          </div>
+        </div>
 
         {loading ? (
-          <div className="gallery__loading">Ачааллаж байна...</div>
+          <div className="gallery__loading">Загваруудыг уншиж байна...</div>
         ) : garments.length === 0 ? (
-          <div className="gallery__loading">Одоогоор загвар байхгүй байна.</div>
+          <div className="gallery__loading">Одоогоор харагдах загвар алга байна.</div>
         ) : (
           <div className="gallery__grid">
-            {garments.map((g) => (
-              <div className="gallery__item" key={g.id}>
-                {g.image_url ? (
-                  <img src={g.image_url} alt={g.name} className="gallery__img" />
+            {garments.map((garment) => (
+              <article className="gallery__item" key={garment.id}>
+                {garment.image_url ? (
+                  <img src={garment.image_url} alt={garment.name} className="gallery__img" />
                 ) : (
-                  <div className="gallery__img gallery__img--placeholder">✂</div>
+                  <div className="gallery__img gallery__img--placeholder">✦</div>
                 )}
+
                 <div className="gallery__overlay">
-                  {g.category_name && (
-                    <span className="gallery__category">{g.category_name}</span>
+                  {garment.category_name && (
+                    <span className="gallery__category">{garment.category_name}</span>
                   )}
-                  <h3 className="gallery__name">{g.name}</h3>
-                  <button
-                    type="button"
-                    className="gallery__tryon"
-                    onClick={() => setTryOnGarment(g)}
-                  >
-                    Өмсөөд үзэх →
-                  </button>
+                  <h3 className="gallery__name">{garment.name}</h3>
+                  <div className="gallery__actions">
+                    <button
+                      type="button"
+                      className="gallery__tryon"
+                      onClick={() => setTryOnGarment(garment)}
+                    >
+                      Өмсөж үзэх
+                    </button>
+                    <Link to="/zahialga" className="gallery__link">
+                      Захиалга →
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         )}
-
-        <div className="gallery__more">
-          <Link to="/zahialga" className="btn-secondary">
-            Бүгдийг үзэх →
-          </Link>
-        </div>
       </div>
 
       {tryOnGarment && (

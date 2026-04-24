@@ -6,48 +6,57 @@ export default function Footer() {
     <footer className="footer">
       <div className="container">
         <div className="footer__top">
-
-          {/* Brand */}
           <div className="footer__brand">
             <div className="footer__logo">
-              <span className="footer__logo-icon">᠁</span>
-              <span className="footer__logo-text">
-                <span>БУРИАД</span>
-                <span className="footer__logo-sub">ХУВЦАС</span>
-              </span>
+              <span className="footer__logo-mark">Д</span>
+              <div className="footer__logo-text">
+                <span className="footer__logo-main">Дэнз</span>
+                <span className="footer__logo-sub">буриад хувцасны студи</span>
+              </div>
             </div>
+
             <p className="footer__brand-desc">
-              Буриад уламжлалт хувцасны захиалга, утга судлалын онлайн платформ.
-              Гар оёдлоор хийгдсэн жинхэнэ буриад хувцас захиалаарай.
+              Дэнз нь уламжлалт буриад хувцасны захиалга, танин мэдэхүй, брэндийн туршлагыг нэг дор төвлөрүүлсэн
+              илүү орчин үеийн вэб систем юм.
             </p>
+
+            <div className="footer__chips">
+              <span>Хэмжээ</span>
+              <span>Загвар</span>
+              <span>Соёлын утга</span>
+            </div>
           </div>
 
-          {/* Nav links */}
           <div className="footer__col">
-            <h4 className="footer__col-title">Холбоосууд</h4>
+            <h4 className="footer__col-title">Навигаци</h4>
             <ul className="footer__links">
-              <li><Link to="/">Нүүр хуудас</Link></li>
+              <li><Link to="/">Эхлэл</Link></li>
               <li><Link to="/zahialga">Захиалга өгөх</Link></li>
-              <li><Link to="/huvtsasnii-utga">Хувцасны утга</Link></li>
+              <li><Link to="/huvtsasnii-utga">Утга, хэв маяг</Link></li>
               <li><Link to="/bidnii-tuhaid">Бидний тухай</Link></li>
             </ul>
           </div>
 
-          {/* Contact */}
           <div className="footer__col">
-            <h4 className="footer__col-title">Холбоо барих</h4>
+            <h4 className="footer__col-title">Холбоо</h4>
             <ul className="footer__links footer__links--contact">
-              <li>📍 Улаанбаатар, Монгол</li>
-              <li>📞 +976 9900 0000</li>
-              <li>✉️ info@buriad-huvtsas.mn</li>
-              <li>🕐 Даваа–Баасан: 09:00–18:00</li>
+              <li>Улаанбаатар, Монгол</li>
+              <li>+976 9900 0000</li>
+              <li>info@denz.mn</li>
+              <li>Даваа-Баасан 09:00-18:00</li>
             </ul>
+          </div>
+
+          <div className="footer__col footer__col--action">
+            <h4 className="footer__col-title">Шууд эхлэх</h4>
+            <p className="footer__action-text">Хэрэглэгчийг шууд захиалгын урсгал руу оруулах товч одоо footer дээр ч тод харагдана.</p>
+            <Link to="/zahialga" className="btn-primary footer__cta">Захиалга эхлэх</Link>
           </div>
         </div>
 
         <div className="footer__bottom">
-          <p>© 2026 Буриад Хувцас. Бүх эрх хуулиар хамгаалагдсан.</p>
-          <p>Дипломын ажлаар хөгжүүлсэн вэб систем</p>
+          <p>© 2026 Дэнз. Бүх эрх хуулиар хамгаалагдсан.</p>
+          <p>Дипломын ажлын хүрээнд хөгжүүлсэн брэндийн систем</p>
         </div>
       </div>
     </footer>

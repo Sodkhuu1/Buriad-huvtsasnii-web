@@ -1,39 +1,43 @@
 /* ========================
-   CSS Variables / Design tokens
+   Design Tokens
    ======================== */
 :root {
-  --crimson:    #8B1A2A;
-  --crimson-light: #A52035;
-  --gold:       #C9A227;
-  --gold-light: #E3B84A;
-  --navy:       #0D1B2A;
-  --navy-mid:   #1B2D42;
-  --navy-light: #243447;
-  --cream:      #F5EFE0;
-  --cream-dark: #EDE4CF;
-  --white:      #FFFFFF;
-  --text-dark:  #1A1008;
-  --text-mid:   #3D2B1F;
-  --text-light: #8A7560;
+  --crimson: #8d2332;
+  --crimson-light: #b53a48;
+  --gold: #c9a35f;
+  --gold-light: #e3c78b;
+  --navy: #152536;
+  --navy-mid: #22394f;
+  --navy-light: #314b63;
+  --cream: #f7f0e4;
+  --cream-dark: #e7dcc9;
+  --sand: #d8c0a0;
+  --white: #ffffff;
+  --text-dark: #23160f;
+  --text-mid: #4f392a;
+  --text-light: #8c725d;
 
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.12);
-  --shadow-md: 0 8px 32px rgba(0,0,0,0.18);
-  --shadow-lg: 0 16px 56px rgba(0,0,0,0.28);
+  --shadow-sm: 0 10px 24px rgba(35, 22, 15, 0.08);
+  --shadow-md: 0 18px 46px rgba(21, 37, 54, 0.12);
+  --shadow-lg: 0 26px 80px rgba(14, 23, 32, 0.22);
 
-  --font-display: 'Cinzel', Georgia, serif;
-  --font-body:    'Raleway', 'Segoe UI', sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Manrope', 'Segoe UI', sans-serif;
 
-  --radius-sm: 6px;
-  --radius-md: 14px;
-  --radius-lg: 24px;
+  --radius-sm: 10px;
+  --radius-md: 20px;
+  --radius-lg: 32px;
 
+  --container-width: 1240px;
   --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ========================
    Reset & Base
    ======================== */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -45,10 +49,16 @@ html {
 
 body {
   font-family: var(--font-body);
-  background: var(--cream);
+  background:
+    radial-gradient(circle at top left, rgba(201, 163, 95, 0.12), transparent 28%),
+    linear-gradient(180deg, #fbf7ef 0%, var(--cream) 34%, #f8f2e8 100%);
   color: var(--text-dark);
   line-height: 1.7;
   overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 a {
@@ -61,101 +71,160 @@ img {
   display: block;
 }
 
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
 /* ========================
    Utility
    ======================== */
 .container {
-  max-width: 1200px;
+  width: min(100% - 32px, var(--container-width));
   margin: 0 auto;
-  padding: 0 24px;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+main {
+  display: block;
 }
 
 .section-title {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3vw, 2.4rem);
-  font-weight: 600;
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  font-weight: 700;
   color: var(--navy);
   text-align: center;
-  margin-bottom: 12px;
+  line-height: 0.96;
+  letter-spacing: 0.01em;
+  margin-bottom: 14px;
 }
 
 .section-subtitle {
   font-size: 1rem;
   color: var(--text-light);
   text-align: center;
-  max-width: 520px;
-  margin: 0 auto 48px;
+  max-width: 640px;
+  margin: 0 auto 52px;
   line-height: 1.8;
 }
 
 .gold-line {
   display: block;
-  width: 64px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--gold), var(--crimson));
-  border-radius: 2px;
-  margin: 12px auto 20px;
+  width: 76px;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(201, 163, 95, 0.25), var(--gold), rgba(141, 35, 50, 0.95));
+  border-radius: 999px;
+  margin: 0 auto 22px;
+}
+
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(141, 35, 50, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--crimson);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.section-shell {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(201, 163, 95, 0.16);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 /* ========================
-   Ornament Pattern (SVG background)
+   Ornament Pattern
    ======================== */
 .ornament-bg {
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227' fill-opacity='0.06'%3E%3Cpath d='M30 0l4 8h8l-6.5 5 2.5 8L30 16l-8 5 2.5-8L18 8h8z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='72' height='72' viewBox='0 0 72 72' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cpath d='M36 8l5.5 11.5h12L44 27l4 12L36 32l-12 7 4-12-9.5-7.5h12z' fill='%23c9a35f' fill-opacity='0.05'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* ========================
-   Button styles
+   Buttons
    ======================== */
 .btn-primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 14px 32px;
-  background: linear-gradient(135deg, var(--crimson), var(--crimson-light));
-  color: var(--cream);
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-light) 100%);
+  color: var(--white);
+  font-size: 0.94rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   cursor: pointer;
   transition: var(--transition);
-  box-shadow: 0 4px 16px rgba(139,26,42,0.35);
+  box-shadow: 0 16px 30px rgba(141, 35, 50, 0.24);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(139,26,42,0.45);
+  box-shadow: 0 20px 42px rgba(141, 35, 50, 0.32);
 }
 
 .btn-secondary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 13px 32px;
-  background: transparent;
-  color: var(--cream);
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  border: 2px solid var(--gold);
-  border-radius: var(--radius-sm);
+  padding: 13px 26px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--navy);
+  font-size: 0.94rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border: 1.5px solid rgba(21, 37, 54, 0.18);
+  border-radius: 999px;
   cursor: pointer;
   transition: var(--transition);
 }
 
 .btn-secondary:hover {
-  background: var(--gold);
-  color: var(--navy);
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--cream);
   transform: translateY(-2px);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(201, 163, 95, 0.5);
+  outline-offset: 2px;
 }
 
 /* ========================
    Scrollbar
    ======================== */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--cream-dark); }
-::-webkit-scrollbar-thumb { background: var(--crimson); border-radius: 3px; }
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(231, 220, 201, 0.9);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--crimson), var(--gold));
+  border-radius: 999px;
+}

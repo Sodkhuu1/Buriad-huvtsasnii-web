@@ -7,23 +7,15 @@ export default function CallToAction() {
       <div className="cta__bg" />
       <div className="container">
         <div className="cta__inner">
-          <div className="cta__decoration">᠁</div>
-          <h2 className="cta__title">
-            Өөрийн хувцасаа
-            <br />
-            <span className="cta__title-accent">өнөөдөр захиалаарай</span>
-          </h2>
+          <span className="section-eyebrow cta__eyebrow">Start with Denz</span>
+          <h2 className="cta__title">Дэнзтэй хамт уламжлалт хувцасны туршлагаа өнөөдрөөс илүү дэгтэй болго.</h2>
           <p className="cta__desc">
-            Биеийн хэмжээсээ оруулан, загвараа сонгон, гар оёдлоор хийгдсэн
-            жинхэнэ буриад хувцастай болоорой.
+            Хэмжээгээ оруулж захиалгаа эхлүүлэх, эсвэл эхлээд утга агуулгатай нь танилцах аль ч урсгал одоо илүү тодорхой,
+            илүү брэндийн мэдрэмжтэй боллоо.
           </p>
           <div className="cta__buttons">
-            <Link to="/zahialga" className="btn-primary">
-              Захиалга эхлэх →
-            </Link>
-            <Link to="/huvtsasnii-utga" className="btn-secondary">
-              Хувцасны утга судлах
-            </Link>
+            <Link to="/zahialga" className="btn-primary">Захиалга эхлэх</Link>
+            <Link to="/huvtsasnii-utga" className="btn-secondary cta__secondary">Утга, хэв маяг үзэх</Link>
           </div>
         </div>
       </div>

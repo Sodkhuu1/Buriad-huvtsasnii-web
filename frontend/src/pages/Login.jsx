@@ -3,16 +3,21 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import './auth.css'
 
+const brandItems = [
+  'Захиалгын урсгал илүү ойлгомжтой',
+  'Брэндийн нэр, өнгө төрх нэг мөр',
+  'Соёлын утгыг танилцуулах орон зай',
+]
+
 export default function Login() {
   const { login } = useAuth()
-  const navigate  = useNavigate()
-  const location  = useLocation()
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  const [form, setForm]       = useState({ email: '', password: '' })
+  const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState('')
+  const [error, setError] = useState('')
 
-  // After login, redirect to where the user came from — or role-based default
   const from = location.state?.from || null
 
   const handle = (e) => setForm(p => ({ ...p, [e.target.name]: e.target.value }))
@@ -23,8 +28,8 @@ export default function Login() {
     setError('')
     try {
       const user = await login(form.email, form.password)
-
       const role = user.role?.toLowerCase()
+
       if (role === 'admin') {
         navigate('/admin', { replace: true })
       } else if (role === 'tailor') {
@@ -33,7 +38,7 @@ export default function Login() {
         navigate(from || '/', { replace: true })
       }
     } catch (err) {
-      setError(err.message || 'Нэвтрэхэд алдаа гарлаа')
+      setError(err.message || 'Нэвтрэх үед алдаа гарлаа')
     } finally {
       setLoading(false)
     }
@@ -41,43 +46,37 @@ export default function Login() {
 
   return (
     <div className="auth-page">
-
-      {/* ── Left brand panel ── */}
       <aside className="auth-brand">
-        <div className="auth-brand__top-bar" />
-        <div className="auth-brand__bottom-bar" />
-
-        <div className="auth-brand__logo">
-          <div className="auth-brand__logo-ring" />
-          <div className="auth-brand__logo-dot">
-            <span className="auth-brand__logo-letter">Б</span>
-          </div>
-        </div>
-
-        <h1 className="auth-brand__title">БУРИАД</h1>
-        <p className="auth-brand__subtitle">ХУВЦАСНЫ</p>
-        <div className="auth-brand__divider" />
-        <p className="auth-brand__tagline">Уламжлалт хувцасны урлал</p>
+        <Link to="/" className="auth-brand__back">← Дэнз рүү буцах</Link>
+        <span className="auth-brand__pill">Дэнз</span>
+        <h1 className="auth-brand__title">Буриад хувцасны захиалгыг илүү цэгцтэй эхлүүлэх орчин.</h1>
         <p className="auth-brand__desc">
-          Монгол уламжлалыг орчин үеийн<br />
-          гоо сайхантай хослуулсан оёдол үйлчилгээ
+          Нэвтэрснээр та захиалгаа хянах, хэмжээсээ хадгалах, оёдлын явцаа илүү ойлгомжтой дагах боломжтой.
         </p>
+
+        <div className="auth-brand__list">
+          {brandItems.map((item, index) => (
+            <div className="auth-brand__item" key={item}>
+              <span>{`0${index + 1}`}</span>
+              <p>{item}</p>
+            </div>
+          ))}
+        </div>
       </aside>
 
-      {/* ── Right form area ── */}
       <main className="auth-form-area">
         <div className="auth-card">
-          <p className="auth-card__eyebrow">Тавтай морил!</p>
+          <p className="auth-card__eyebrow">Welcome back</p>
           <h2 className="auth-card__heading">Нэвтрэх</h2>
-          <div className="auth-card__accent" />
+          <p className="auth-card__intro">Дэнзийн системд нэвтэрч захиалга, загвар, мэдээллээ үргэлжлүүлээрэй.</p>
 
           <form onSubmit={submit}>
             <div className="auth-field">
-              <label className="auth-field__label">И-МЭЙЛ ХАЯГ</label>
+              <label className="auth-field__label">И-мэйл</label>
               <input
                 name="email"
                 type="email"
-                placeholder="example@email.com"
+                placeholder="name@example.com"
                 value={form.email}
                 onChange={handle}
                 required
@@ -87,11 +86,11 @@ export default function Login() {
             </div>
 
             <div className="auth-field">
-              <label className="auth-field__label">НУУЦ ҮГ</label>
+              <label className="auth-field__label">Нууц үг</label>
               <input
                 name="password"
                 type="password"
-                placeholder="••••••••••"
+                placeholder="••••••••"
                 value={form.password}
                 onChange={handle}
                 required
@@ -101,25 +100,19 @@ export default function Login() {
             </div>
 
             <div className="auth-forgot">
-              <button type="button">Нууц үг мартсан уу?</button>
+              <button type="button">Нууц үгээ сэргээх</button>
             </div>
 
             {error && <div className="auth-error">{error}</div>}
 
             <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? 'Түр хүлээнэ үү...' : 'НЭВТРЭХ'}
+              {loading ? 'Нэвтэрч байна...' : 'Нэвтрэх'}
             </button>
           </form>
 
-          <div className="auth-divider">
-            <span className="auth-divider__line" />
-            <span className="auth-divider__text">эсвэл</span>
-            <span className="auth-divider__line" />
-          </div>
-
           <p className="auth-footer">
             Бүртгэлгүй юу?
-            <Link to="/signup">Бүртгүүлэх →</Link>
+            <Link to="/signup">Бүртгүүлэх</Link>
           </p>
         </div>
       </main>

@@ -1,91 +1,107 @@
 import { Link } from 'react-router-dom'
 import './HeroSection.css'
 
+const signals = [
+  'Хэмжээнд суурилсан захиалга',
+  'Соёлын тайлбартай загварын сан',
+  'Оёдолчин, захиалагчийг холбосон урсгал',
+]
+
+const journeys = [
+  {
+    label: '01',
+    title: 'Захиалгаа бүрдүүл',
+    text: 'Биеийн хэмжээгээ оруулаад өөрт тохирсон буриад хувцсыг итгэлтэйгээр захиална.',
+    link: '/zahialga',
+    cta: 'Захиалга эхлэх',
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop&q=80',
+    tone: 'order',
+  },
+  {
+    label: '02',
+    title: 'Утга, хэв маягийг тань',
+    text: 'Хээ угалз, өнгө, хэрэглээний тайлбарыг уншиж хувцас бүрийн цаад утгыг ойлгоно.',
+    link: '/huvtsasnii-utga',
+    cta: 'Судалж үзэх',
+    image: 'https://res.cloudinary.com/dizjdjrfh/image/upload/v1776685154/content_buriad_002_1_vf80r3.jpg',
+    tone: 'learn',
+  },
+]
+
 export default function HeroSection() {
   return (
     <section className="hero">
-      {/* Decorative overlay pattern */}
-      <div className="hero__pattern" />
+      <div className="hero__backdrop" />
+      <div className="hero__texture" />
 
-      {/* Top banner */}
-      <div className="hero__banner">
-        <span className="hero__banner-line" />
-        <span className="hero__banner-text">
-          ᠪᠤᠷᠢᠶᠠᠳ · БУРИАД · BURYAD
-        </span>
-        <span className="hero__banner-line" />
-      </div>
+      <div className="container hero__layout">
+        <div className="hero__content">
+          <span className="hero__eyebrow">Дэнз • Буриад хувцасны захиалга</span>
 
-      {/* Headline */}
-      <div className="hero__headline">
-        <h1 className="hero__title">
-          Буриад хувцасны
-          <br />
-          <span className="hero__title-accent">уламжлал ба захиалга</span>
-        </h1>
-        <p className="hero__desc">
-          Биеийн хэмжээсээ оруулан уламжлалт буриад хувцас захиалах,
-          <br className="hero__desc-br" />
-          хувцасны гарал үүсэл, утга учрыг танин мэдэх боломжтой.
-        </p>
-      </div>
+          <h1 className="hero__title">
+            Дэнз
+            <span className="hero__title-accent"> Уламжлалыг илүү ойр мэдэр.</span>
+          </h1>
 
-      {/* Two main cards */}
-      <div className="hero__cards">
+          <p className="hero__desc">
+            Энэхүү платформ нь хэрэглэгчдэд биеийн хэмжээнд тохируулан буриад хувцас захиалах, загварыг өөрийн зураг дээр туршиж харах, мөн хувцасны соёлын утга, бэлгэдлийг танин мэдэх боломжийг нэг дор бүрдүүлсэн.
+          </p>
 
-        {/* Card 1: Захиалга */}
-        <Link to="/zahialga" className="hero__card hero__card--order">
-          <div className="hero__card-img-wrap">
-            <img
-              src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=80"
-              alt="Буриад хувцас захиалга"
-              className="hero__card-img"
-            />
-            <div className="hero__card-overlay" />
+          <div className="hero__actions">
+            <Link to="/zahialga" className="btn-primary">Захиалга өгөх</Link>
+            <Link to="/bidnii-tuhaid" className="btn-secondary">Брэндийн тухай</Link>
           </div>
-          <div className="hero__card-body">
-            <span className="hero__card-tag">01</span>
-            <h2 className="hero__card-title">Захиалга өгөх</h2>
-            <p className="hero__card-text">
-              Биеийн хэмжээсээ оруулан гар аргаар оёсон уламжлалт
-              буриад хувцас захиалаарай.
+
+          <div className="hero__signals">
+            {signals.map((signal) => (
+              <div className="hero__signal" key={signal}>
+                <span className="hero__signal-dot" />
+                <span>{signal}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="hero__visual">
+          <div className="hero__editorial section-shell">
+            <span className="hero__editorial-label">Brand Note</span>
+            <h2 className="hero__editorial-title">Соёлын нарийн утгыг дижитал орчинд илүү ойлгомжтой, илүү тансаг хүргэнэ.</h2>
+            <p className="hero__editorial-text">
+              Дэнзийн зорилго бол захиалга өгөх процессыг сайхан харагдуулахаас илүүтэй соёлын үнэ цэнийг
+              эмх цэгцтэйгээр мэдрүүлэх юм.
             </p>
-            <div className="hero__card-cta">
-              <span>Захиалга өгөх</span>
-              <span className="hero__card-arrow">→</span>
+            <div className="hero__editorial-metrics">
+              <div>
+                <strong>3 алхам</strong>
+                <span>захиалгын урсгал</span>
+              </div>
+              <div>
+                <strong>1 систем</strong>
+                <span>брэнд, тайлбар, захиалга</span>
+              </div>
             </div>
           </div>
-        </Link>
 
-        {/* Card 2: Хувцасны утга */}
-        <Link to="/huvtsasnii-utga" className="hero__card hero__card--learn">
-          <div className="hero__card-img-wrap">
-            <img
-              src="https://res.cloudinary.com/dizjdjrfh/image/upload/v1776685154/content_buriad_002_1_vf80r3.jpg"
-              alt="Буриад хувцасны утга"
-              className="hero__card-img"
-            />
-            <div className="hero__card-overlay" />
+          <div className="hero__cards">
+            {journeys.map((item) => (
+              <Link key={item.title} to={item.link} className={`hero__card hero__card--${item.tone}`}>
+                <div className="hero__card-imageWrap">
+                  <img src={item.image} alt={item.title} className="hero__card-image" />
+                </div>
+                <div className="hero__card-overlay" />
+                <div className="hero__card-body">
+                  <span className="hero__card-label">{item.label}</span>
+                  <h3 className="hero__card-title">{item.title}</h3>
+                  <p className="hero__card-text">{item.text}</p>
+                  <span className="hero__card-link">
+                    {item.cta}
+                    <span>→</span>
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
-          <div className="hero__card-body">
-            <span className="hero__card-tag">02</span>
-            <h2 className="hero__card-title">Хувцасны утга судлах</h2>
-            <p className="hero__card-text">
-              Буриад хувцасны гарал үүсэл, тэмдэг тэмдэглэгээ,
-              уламжлалт хээ угалзын утга учрыг нэгдэж судлаарай.
-            </p>
-            <div className="hero__card-cta">
-              <span>Судлах</span>
-              <span className="hero__card-arrow">→</span>
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      {/* Scroll hint */}
-      <div className="hero__scroll">
-        <span className="hero__scroll-label">Доош гүйлгэх</span>
-        <span className="hero__scroll-icon">⌄</span>
+        </div>
       </div>
     </section>
   )
