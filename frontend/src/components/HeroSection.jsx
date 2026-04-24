@@ -61,7 +61,7 @@ export default function HeroSection() {
         <Link to="/huvtsasnii-utga" className="hero__card hero__card--learn">
           <div className="hero__card-img-wrap">
             <img
-              src="https://images.unsplash.com/photo-1594038984077-b46b5f9ac9bc?w=800&auto=format&fit=crop&q=80"
+              src="https://res.cloudinary.com/dizjdjrfh/image/upload/v1776685154/content_buriad_002_1_vf80r3.jpg"
               alt="Буриад хувцасны утга"
               className="hero__card-img"
             />

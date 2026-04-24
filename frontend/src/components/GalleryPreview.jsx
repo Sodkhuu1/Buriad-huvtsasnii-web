@@ -1,30 +1,22 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { api } from '../api'
+import TryOnModal from './TryOnModal'
 import './GalleryPreview.css'
 
-const items = [
-  {
-    img: 'https://images.unsplash.com/photo-1594038984077-b46b5f9ac9bc?w=600&auto=format&fit=crop&q=80',
-    title: 'Буриад дэгэл',
-    category: 'Эрэгтэй хувцас',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop&q=80',
-    title: 'Торгон дэл',
-    category: 'Эмэгтэй хувцас',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=600&auto=format&fit=crop&q=80',
-    title: 'Тэргүүний малгай',
-    category: 'Малгай',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=600&auto=format&fit=crop&q=80',
-    title: 'Буриад гутал',
-    category: 'Гутал',
-  },
-]
-
 export default function GalleryPreview() {
+  const [garments, setGarments] = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [tryOnGarment, setTryOnGarment] = useState(null)
+
+  useEffect(() => {
+    // 4 shirheg l haruulna, buur ni Zahialga dr l haragdaarai
+    api.get('/garments')
+      .then(data => setGarments((data.garments || []).slice(0, 4)))
+      .catch(() => setGarments([]))
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <section className="gallery">
       <div className="gallery__bg" />
@@ -37,25 +29,50 @@ export default function GalleryPreview() {
           Буриад хувцасны уламжлалт загваруудтай танилцаарай.
         </p>
 
-        <div className="gallery__grid">
-          {items.map((item, i) => (
-            <Link to="/huvtsasnii-utga" className="gallery__item" key={i}>
-              <img src={item.img} alt={item.title} className="gallery__img" />
-              <div className="gallery__overlay">
-                <span className="gallery__category">{item.category}</span>
-                <h3 className="gallery__name">{item.title}</h3>
-                <span className="gallery__link">Дэлгэрэнгүй →</span>
+        {loading ? (
+          <div className="gallery__loading">Ачааллаж байна...</div>
+        ) : garments.length === 0 ? (
+          <div className="gallery__loading">Одоогоор загвар байхгүй байна.</div>
+        ) : (
+          <div className="gallery__grid">
+            {garments.map((g) => (
+              <div className="gallery__item" key={g.id}>
+                {g.image_url ? (
+                  <img src={g.image_url} alt={g.name} className="gallery__img" />
+                ) : (
+                  <div className="gallery__img gallery__img--placeholder">✂</div>
+                )}
+                <div className="gallery__overlay">
+                  {g.category_name && (
+                    <span className="gallery__category">{g.category_name}</span>
+                  )}
+                  <h3 className="gallery__name">{g.name}</h3>
+                  <button
+                    type="button"
+                    className="gallery__tryon"
+                    onClick={() => setTryOnGarment(g)}
+                  >
+                    Өмсөөд үзэх →
+                  </button>
+                </div>
               </div>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="gallery__more">
-          <Link to="/huvtsasnii-utga" className="btn-secondary">
+          <Link to="/zahialga" className="btn-secondary">
             Бүгдийг үзэх →
           </Link>
         </div>
       </div>
+
+      {tryOnGarment && (
+        <TryOnModal
+          garment={tryOnGarment}
+          onClose={() => setTryOnGarment(null)}
+        />
+      )}
     </section>
   )
 }

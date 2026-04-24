@@ -90,6 +90,39 @@
   color: var(--gold-light);
 }
 
+.gallery__tryon {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: var(--gold);
+  color: var(--navy);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.gallery__tryon:hover {
+  background: var(--gold-light);
+}
+
+.gallery__img--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--navy-light);
+  color: var(--gold);
+  font-size: 3rem;
+}
+
+.gallery__loading {
+  text-align: center;
+  color: rgba(245,239,224,0.65);
+  padding: 40px 0;
+}
+
 .gallery__more {
   display: flex;
   justify-content: center;

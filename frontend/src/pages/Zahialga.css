@@ -216,6 +216,26 @@
   font-size: 0.9rem;
 }
 
+.design-card__tryon {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.design-card__tryon:hover {
+  background: var(--gold);
+  color: var(--white);
+}
+
 .confirm-card__design-tailor {
   font-size: 0.8rem;
   color: var(--gold);

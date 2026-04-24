@@ -4,10 +4,10 @@ import { useAuth } from '../context/AuthContext'
 import './Navbar.css'
 
 const navLinks = [
-  { path: '/',                 label: 'Нүүр хуудас' },
-  { path: '/zahialga',         label: 'Захиалга өгөх' },
-  { path: '/huvtsasnii-utga',  label: 'Хувцасны утга' },
-  { path: '/bidnii-tuhaid',    label: 'Бидний тухай' },
+  { path: '/', label: 'Нүүр хуудас' },
+  { path: '/zahialga', label: 'Захиалга өгөх' },
+  { path: '/huvtsasnii-utga', label: 'Хувцасны утга' },
+  { path: '/bidnii-tuhaid', label: 'Бидний тухай' },
 ]
 
 export default function Navbar() {

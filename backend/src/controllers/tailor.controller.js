@@ -188,7 +188,8 @@ const getDesigns = async (req, res, next) => {
   try {
     const result = await pool.query(
       `SELECT gd.id, gd.name, gd.ceremonial_use, gd.silhouette,
-              gd.base_price, gd.image_url, gd.active, gd.created_at,
+              gd.base_price, gd.image_url, gd.flat_image_url,
+              gd.active, gd.created_at,
               gc.id AS category_id, gc.name AS category_name
        FROM garment_designs gd
        LEFT JOIN garment_categories gc ON gc.id = gd.category_id
@@ -205,17 +206,17 @@ const getDesigns = async (req, res, next) => {
 // ─── POST /api/tailor/designs ─────────────────────────────────────────────────
 const createDesign = async (req, res, next) => {
   try {
-    const { name, category_id, base_price, ceremonial_use, silhouette, image_url } = req.body
+    const { name, category_id, base_price, ceremonial_use, silhouette, image_url, flat_image_url } = req.body
     if (!name || !base_price) {
       return next(createError(400, 'Нэр болон үндсэн үнэ заавал шаардлагатай'))
     }
     const result = await pool.query(
       `INSERT INTO garment_designs
-         (tailor_id, category_id, name, ceremonial_use, silhouette, base_price, image_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+         (tailor_id, category_id, name, ceremonial_use, silhouette, base_price, image_url, flat_image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
       [req.user.id, category_id || null, name, ceremonial_use || null,
-       silhouette || null, base_price, image_url || null]
+       silhouette || null, base_price, image_url || null, flat_image_url || null]
     )
     res.status(201).json({ success: true, design: result.rows[0] })
   } catch (err) {
@@ -226,7 +227,7 @@ const createDesign = async (req, res, next) => {
 // ─── PUT /api/tailor/designs/:id ──────────────────────────────────────────────
 const updateDesign = async (req, res, next) => {
   try {
-    const { name, category_id, base_price, ceremonial_use, silhouette, image_url, active } = req.body
+    const { name, category_id, base_price, ceremonial_use, silhouette, image_url, flat_image_url, active } = req.body
     const result = await pool.query(
       `UPDATE garment_designs
        SET name = COALESCE($1, name),
@@ -235,10 +236,11 @@ const updateDesign = async (req, res, next) => {
            ceremonial_use = COALESCE($4, ceremonial_use),
            silhouette = COALESCE($5, silhouette),
            image_url = COALESCE($6, image_url),
-           active = COALESCE($7, active)
-       WHERE id = $8 AND tailor_id = $9
+           flat_image_url = COALESCE($7, flat_image_url),
+           active = COALESCE($8, active)
+       WHERE id = $9 AND tailor_id = $10
        RETURNING *`,
-      [name, category_id, base_price, ceremonial_use, silhouette, image_url, active,
+      [name, category_id, base_price, ceremonial_use, silhouette, image_url, flat_image_url, active,
        req.params.id, req.user.id]
     )
     if (!result.rows.length) return next(createError(404, 'Загвар олдсонгүй'))

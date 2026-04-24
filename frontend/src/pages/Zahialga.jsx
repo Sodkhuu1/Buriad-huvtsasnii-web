@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
 import MeasurementGuide from '../components/MeasurementGuide'
+import TryOnModal from '../components/TryOnModal'
 import './Zahialga.css'
 
 const STEPS = ['Загвар', 'Хэмжээс', 'Баталгаажуулах']
@@ -95,6 +96,7 @@ export default function Zahialga() {
   const [submittedOrder, setSubmittedOrder] = useState(null)
   const [errors, setErrors]               = useState({})
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [tryOnDesign, setTryOnDesign]     = useState(null)
 
   const [designs, setDesigns]             = useState([])
   const [loadingDesigns, setLoadingDesigns] = useState(true)
@@ -216,6 +218,13 @@ export default function Zahialga() {
         />
       )}
 
+      {tryOnDesign && (
+        <TryOnModal
+          garment={tryOnDesign}
+          onClose={() => setTryOnDesign(null)}
+        />
+      )}
+
       {/* Step indicator */}
       <div className="zahialga-steps container">
         {STEPS.map((label, i) => (
@@ -248,10 +257,15 @@ export default function Zahialga() {
             ) : (
               <div className="design-grid">
                 {designs.map(d => (
-                  <button
+                  <div
                     key={d.id}
+                    role="button"
+                    tabIndex={0}
                     className={`design-card${selectedDesign?.id === d.id ? ' design-card--selected' : ''}`}
                     onClick={() => { setSelectedDesign(d); setErrors({}) }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') { setSelectedDesign(d); setErrors({}) }
+                    }}
                   >
                     <div className="design-card__img-wrap">
                       {d.image_url ? (
@@ -269,8 +283,16 @@ export default function Zahialga() {
                       {d.ceremonial_use && <p className="design-card__desc">{d.ceremonial_use}</p>}
                       {d.tailor_name && <p className="design-card__tailor">Оёдолчин: {d.tailor_name}</p>}
                       <span className="design-card__price">{Number(d.base_price).toLocaleString()}₮-с эхлэн</span>
+                      {/* card click hiihed songohgvi baihin tuld stopPropagation */}
+                      <button
+                        type="button"
+                        className="design-card__tryon"
+                        onClick={(e) => { e.stopPropagation(); setTryOnDesign(d) }}
+                      >
+                        Өмсөөд үзэх
+                      </button>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             )}

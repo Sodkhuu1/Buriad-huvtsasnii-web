@@ -3,7 +3,8 @@ import { api } from '../../api'
 import './TailorDesigns.css'
 
 const EMPTY_FORM = {
-  name: '', category_id: '', base_price: '', ceremonial_use: '', silhouette: '', image_url: '',
+  name: '', category_id: '', base_price: '', ceremonial_use: '', silhouette: '',
+  image_url: '', flat_image_url: '',
 }
 
 export default function TailorDesigns() {
@@ -41,12 +42,13 @@ export default function TailorDesigns() {
   const openEdit = (design) => {
     setEditing(design)
     setForm({
-      name:          design.name          ?? '',
-      category_id:   design.category_id   ?? '',
-      base_price:    design.base_price    ?? '',
-      ceremonial_use: design.ceremonial_use ?? '',
-      silhouette:    design.silhouette    ?? '',
-      image_url:     design.image_url     ?? '',
+      name:            design.name            ?? '',
+      category_id:     design.category_id     ?? '',
+      base_price:      design.base_price      ?? '',
+      ceremonial_use:  design.ceremonial_use  ?? '',
+      silhouette:      design.silhouette      ?? '',
+      image_url:       design.image_url       ?? '',
+      flat_image_url:  design.flat_image_url  ?? '',
     })
     setFormError('')
     setShowModal(true)
@@ -135,6 +137,11 @@ export default function TailorDesigns() {
               <div className="td-field">
                 <label>Зургийн URL</label>
                 <input name="image_url" value={form.image_url} onChange={handleField} placeholder="https://..." />
+              </div>
+              <div className="td-field">
+                {/* try-on deer heregtei, huvtsasiig tegshlej taviad avsan zurag */}
+                <label>Тэгшилсэн хувцасны зураг (заавал биш, өмсөөд үзэх боломжид хэрэглэнэ)</label>
+                <input name="flat_image_url" value={form.flat_image_url} onChange={handleField} placeholder="https://..." />
               </div>
               {formError && <div className="td-error">{formError}</div>}
               <div className="td-modal__actions">

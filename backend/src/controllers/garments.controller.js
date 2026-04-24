@@ -11,6 +11,7 @@ const getGarments = async (req, res, next) => {
         gd.ceremonial_use,
         gd.base_price,
         gd.image_url,
+        gd.flat_image_url,
         gd.tailor_id,
         gc.name  AS category_name,
         gc.audience,

@@ -15,7 +15,7 @@ CREATE TYPE account_status AS ENUM ('active', 'inactive', 'blocked');
 CREATE TYPE order_status AS ENUM (
   'draft', 'submitted', 'under_review', 'needs_clarification',
   'accepted', 'rejected', 'deposit_paid', 'in_production',
-  'ready', 'shipped', 'delivered', 'completed'
+  'ready', 'shipped', 'delivered', 'completed', 'cancelled'
 );
 CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'failed', 'refunded');
 CREATE TYPE shipment_status AS ENUM ('preparing', 'in_transit', 'delivered', 'returned');
@@ -150,6 +150,8 @@ CREATE TABLE garment_designs (
   silhouette      VARCHAR(100),
   base_price      NUMERIC(10,2) NOT NULL DEFAULT 0,
   image_url       TEXT,
+  -- huvtsasiig tegshlej taviad avsan zurag, try-on deer heregtei
+  flat_image_url  TEXT,
   active          BOOLEAN DEFAULT TRUE,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
