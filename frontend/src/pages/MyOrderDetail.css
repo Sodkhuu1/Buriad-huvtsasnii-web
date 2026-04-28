@@ -93,6 +93,103 @@
   cursor: not-allowed;
 }
 
+.mod-pay-btn {
+  background: #b8451c;
+  color: #fff;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 8px 18px;
+  font-size: 0.88rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.mod-pay-btn:hover {
+  background: #9c3a17;
+}
+
+.mod-pay-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Uneglee — review form bolon harag */
+.mod-review-hint {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.mod-stars-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.mod-star {
+  font-size: 1.8rem;
+  color: #d4d4d8;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.mod-star.is-filled {
+  color: #f5b400;
+}
+
+.mod-star--btn {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.mod-star--btn:hover { transform: scale(1.08); }
+
+.mod-stars-row--display .mod-star {
+  font-size: 1.4rem;
+}
+
+.mod-stars-num {
+  margin-left: 8px;
+  font-size: 0.88rem;
+  color: var(--text-light);
+}
+
+.mod-review-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d4d4d8;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+.mod-review-textarea:focus {
+  outline: none;
+  border-color: #b8451c;
+}
+
+.mod-review-comment {
+  font-size: 0.92rem;
+  color: var(--text-color);
+  line-height: 1.55;
+  margin: 8px 0 6px;
+  font-style: italic;
+}
+
+.mod-review-date {
+  font-size: 0.78rem;
+  color: var(--text-light);
+}
+
 /* Cancel confirm modal */
 .mod-modal-overlay {
   position: fixed;

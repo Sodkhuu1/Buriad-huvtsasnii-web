@@ -17,6 +17,11 @@ export const STATUS_LABEL = {
 export const statusBadgeClass = (status) =>
   `co-badge--${(status ?? '').toLowerCase()}`
 
+export const SHIPMENT_MODE_LABEL = {
+  pickup:  'Өөрөө ирж авах',
+  courier: '3-дагч хүргэлт',
+}
+
 export const MEASUREMENT_LABEL = {
   height:   'Өндөр',
   chest:    'Цээж',

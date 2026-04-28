@@ -17,7 +17,8 @@ export const STATUS_LABEL = {
 export const statusBadgeClass = (status) =>
   `td-badge--${(status ?? '').toLowerCase()}`
 
-// Тухайн статусд оёдолчин хийж болох үйлдлүүд
+// Tuhain statusd oyodolchin hiij bolokh uildluud
+// Anhaar: ready -> shipped shilijill 'Iigeeh' modal-aar tusgairlan ajilladag tul end orjjuulahgui
 export const TAILOR_ACTIONS = {
   submitted: [
     { label: 'Батлах',    next: 'accepted', style: 'primary' },
@@ -29,9 +30,14 @@ export const TAILOR_ACTIONS = {
   in_production: [
     { label: 'Бэлэн болсон гэж тэмдэглэх', next: 'ready', style: 'primary' },
   ],
-  ready: [
-    { label: 'Хүргэлтэд өгсөн', next: 'shipped', style: 'primary' },
+  shipped: [
+    { label: 'Хүргэгдсэн гэж тэмдэглэх', next: 'delivered', style: 'primary' },
   ],
+}
+
+export const SHIPMENT_MODE_LABEL = {
+  pickup:  'Захиалагч өөрөө ирж авах',
+  courier: '3-дагч хүргэлт',
 }
 
 export const MEASUREMENT_LABEL = {
