@@ -17,6 +17,8 @@ const tailorDashRoutes  = require('./routes/tailor.routes')
 const adminRoutes       = require('./routes/admin.routes')
 const paymentRoutes     = require('./routes/payments.routes')
 const notificationRoutes = require('./routes/notifications.routes')
+const tryOnRoutes       = require('./routes/tryon.routes')
+const chatRoutes        = require('./routes/chat.routes')
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,7 +32,7 @@ app.use(cors({
 }));
 
 // express.json(): lets us read JSON data from request body (req.body)
-app.use(express.json());
+app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '15mb' }));
 
 // Parse cookies into req.cookies — used for httpOnly JWT auth
 app.use(cookieParser());
@@ -44,6 +46,8 @@ app.use('/api/tailor',   tailorDashRoutes)
 app.use('/api/admin',    adminRoutes)
 app.use('/api/payments', paymentRoutes)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/tryon', tryOnRoutes)
+app.use('/api/chat', chatRoutes)
 
 // Health check — useful to test if the server is running
 app.get('/api/health', (req, res) => {

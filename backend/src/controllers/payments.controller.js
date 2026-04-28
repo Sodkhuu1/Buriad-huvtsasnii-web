@@ -5,6 +5,42 @@ const { createError } = require('../middleware/errorHandler')
 const qpay = require('../services/qpay')
 const notify = require('../services/notifications')
 
+const markPaymentPaid = async (client, pay, changedById = null, paidAt = new Date()) => {
+  await client.query(
+    `UPDATE payments SET status = 'paid', paid_at = $1 WHERE id = $2`,
+    [paidAt, pay.id]
+  )
+
+  if (pay.order_status !== 'accepted') {
+    return pay.order_status
+  }
+
+  await client.query(
+    `UPDATE orders SET status = 'deposit_paid', updated_at = NOW() WHERE id = $1`,
+    [pay.order_id]
+  )
+  await client.query(
+    `INSERT INTO order_status_history (order_id, from_status, to_status, changed_by_id, note)
+     VALUES ($1, 'accepted', 'deposit_paid', $2, 'QPay-ээр төлбөр хийгдлээ')`,
+    [pay.order_id, changedById]
+  )
+
+  const tRes = await client.query(
+    `SELECT tailor_id, order_number FROM orders WHERE id = $1`,
+    [pay.order_id]
+  )
+  if (tRes.rows[0]?.tailor_id) {
+    await notify.send(client, {
+      userId: tRes.rows[0].tailor_id,
+      orderId: pay.order_id,
+      title: 'Урьдчилгаа төлбөр ирлээ',
+      content: `${tRes.rows[0].order_number} захиалга төлөгдсөн. Үйлдвэрлэлээ эхлүүлж болно.`,
+    })
+  }
+
+  return 'deposit_paid'
+}
+
 // POST /api/payments/orders/:id/invoice
 // Zahialagch torlog jendlee tolboriin invoice usgenee
 const createInvoice = async (req, res, next) => {
@@ -121,41 +157,10 @@ const checkPayment = async (req, res, next) => {
       return res.json({ success: true, paid: false })
     }
 
-    // Tölögdsön — payment + order-iig shineechelnee
-    await client.query(
-      `UPDATE payments SET status = 'paid', paid_at = $1 WHERE id = $2`,
-      [result.paidAt || new Date(), pay.id]
-    )
-
-    // Zaval accepted baigaa esehiig dahin shalga (race condition baival)
-    if (pay.order_status === 'accepted') {
-      await client.query(
-        `UPDATE orders SET status = 'deposit_paid', updated_at = NOW() WHERE id = $1`,
-        [pay.order_id]
-      )
-      await client.query(
-        `INSERT INTO order_status_history (order_id, from_status, to_status, changed_by_id, note)
-         VALUES ($1, 'accepted', 'deposit_paid', $2, 'QPay-ээр төлбөр хийгдлээ')`,
-        [pay.order_id, req.user.id]
-      )
-
-      // Oyodolchind medeglel
-      const tRes = await client.query(
-        `SELECT tailor_id, order_number FROM orders WHERE id = $1`,
-        [pay.order_id]
-      )
-      if (tRes.rows[0]?.tailor_id) {
-        await notify.send(client, {
-          userId: tRes.rows[0].tailor_id,
-          orderId: pay.order_id,
-          title: 'Урьдчилгаа төлбөр ирлээ',
-          content: `${tRes.rows[0].order_number} захиалга төлөгдсөн. Үйлдвэрлэлээ эхлүүлж болно.`,
-        })
-      }
-    }
+    const orderStatus = await markPaymentPaid(client, pay, req.user.id, result.paidAt || new Date())
 
     await client.query('COMMIT')
-    res.json({ success: true, paid: true, order_status: 'deposit_paid' })
+    res.json({ success: true, paid: true, order_status: orderStatus })
   } catch (err) {
     await client.query('ROLLBACK')
     next(err)
@@ -164,4 +169,73 @@ const checkPayment = async (req, res, next) => {
   }
 }
 
-module.exports = { createInvoice, checkPayment }
+// POST /api/payments/qpay/callback
+// QPay calls this URL after payment. The route is public, but we re-check the
+// invoice with QPay before changing local payment/order state.
+const handleQpayCallback = async (req, res, next) => {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    const invoiceId =
+      req.body?.invoice_id ||
+      req.body?.object_id ||
+      req.body?.transaction_reference ||
+      req.query?.invoice_id ||
+      req.query?.object_id
+
+    const orderId = req.query?.order_id || req.body?.order_id
+
+    if (!invoiceId && !orderId) {
+      throw createError(400, 'invoice_id or order_id is required')
+    }
+
+    const params = []
+    const conditions = ["p.status = 'pending'"]
+
+    if (invoiceId) {
+      params.push(invoiceId)
+      conditions.push(`p.transaction_reference = $${params.length}`)
+    }
+    if (orderId) {
+      params.push(orderId)
+      conditions.push(`p.order_id = $${params.length}`)
+    }
+
+    const payRes = await client.query(
+      `SELECT p.id, p.order_id, p.status, p.transaction_reference, p.amount,
+              o.status AS order_status
+       FROM payments p
+       JOIN orders o ON o.id = p.order_id
+       WHERE ${conditions.join(' AND ')}
+       ORDER BY p.created_at DESC
+       LIMIT 1`,
+      params
+    )
+
+    if (!payRes.rows.length) {
+      await client.query('COMMIT')
+      return res.json({ success: true, message: 'No pending payment to update' })
+    }
+
+    const pay = payRes.rows[0]
+    const result = await qpay.checkPayment(pay.transaction_reference)
+
+    if (!result.paid) {
+      await client.query('COMMIT')
+      return res.status(202).json({ success: true, paid: false })
+    }
+
+    const orderStatus = await markPaymentPaid(client, pay, null, result.paidAt || new Date())
+
+    await client.query('COMMIT')
+    res.json({ success: true, paid: true, order_status: orderStatus })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    next(err)
+  } finally {
+    client.release()
+  }
+}
+
+module.exports = { createInvoice, checkPayment, handleQpayCallback }

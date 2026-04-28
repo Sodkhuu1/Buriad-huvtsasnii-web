@@ -6,7 +6,7 @@
 //    (JS cannot read that cookie — that's the point, it's XSS-safe)
 // 3. If the server returns an error, it throws so components can catch it
 
-const BASE_URL = 'http://localhost:5000/api'
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 const request = async (path, options = {}) => {
   const headers = { 'Content-Type': 'application/json', ...options.headers }

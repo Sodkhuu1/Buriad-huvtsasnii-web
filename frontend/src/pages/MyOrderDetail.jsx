@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { api } from '../api'
 import PaymentModal from '../components/PaymentModal'
+import OrderChat from '../components/OrderChat'
 import {
   STATUS_LABEL, statusBadgeClass, MEASUREMENT_LABEL, SHIPMENT_MODE_LABEL,
   formatDate, formatDateTime,
@@ -261,6 +262,8 @@ export default function MyOrderDetail() {
               </div>
             </div>
           )}
+
+          <OrderChat orderId={order.id} title="Оёдолчинтой чатлах" />
 
           {/* Price */}
           <div className="mod-card">

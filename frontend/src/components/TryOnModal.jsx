@@ -1,9 +1,13 @@
 import { useState } from 'react'
-import { Client } from '@gradio/client'
+import { api } from '../api'
 import './TryOnModal.css'
 
-// yisol/IDM-VTON — huggingface deerh virtual try-on model
-const SPACE = 'yisol/IDM-VTON'
+const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = () => resolve(reader.result)
+  reader.onerror = () => reject(reader.error)
+  reader.readAsDataURL(file)
+})
 
 export default function TryOnModal({ garment, onClose, onProceedToOrder }) {
   const [userPhoto, setUserPhoto]   = useState(null)
@@ -34,30 +38,14 @@ export default function TryOnModal({ garment, onClose, onProceedToOrder }) {
     setResultUrl('')
 
     try {
-      // garment zurgiig blob bolgoj avna, cors aldaa gargaval backend-eer damjuulah heregtei bolno
-      const garmentBlob = await fetch(garmentImageUrl).then(r => {
-        if (!r.ok) throw new Error('Загварын зургийг татаж чадсангүй')
-        return r.blob()
+      const humanImageDataUrl = await fileToDataUrl(userPhoto)
+      const data = await api.post('/tryon', {
+        human_image_data_url: humanImageDataUrl,
+        garment_image_url: garmentImageUrl,
+        garment_name: garment.name || 'garment',
       })
 
-      const app = await Client.connect(SPACE)
-
-      // IDM-VTON /tryon input: [humanImg(dict), garmImg, desc, useAutoMask, autoCrop, steps, seed]
-      const result = await app.predict('/tryon', [
-        { background: userPhoto, layers: [], composite: null },
-        garmentBlob,
-        garment.name || 'garment',
-        true,
-        true,
-        30,
-        42,
-      ])
-
-      // buun output ni [image, masked_img] maygaar irne
-      const first = Array.isArray(result.data) ? result.data[0] : result.data
-      const url = first?.url || first?.path || (typeof first === 'string' ? first : '')
-      if (!url) throw new Error('Үр дүн олдсонгүй')
-      setResultUrl(url)
+      setResultUrl(data.result_url)
     } catch (err) {
       // Space queue etsdee hvleehgvi vyd alge bolno
       setError(err?.message || 'Өмсөөд үзэхэд алдаа гарлаа. Дахин оролдоорой.')

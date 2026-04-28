@@ -56,7 +56,7 @@ const getOrders = async (req, res, next) => {
   try {
     const { status, limit } = req.query
     const params = [req.user.id]
-    const conditions = ['o.tailor_id = $1']
+    const conditions = ['(o.tailor_id = $1 OR gd.tailor_id = $1)']
 
     if (status) {
       params.push(status)
@@ -110,7 +110,7 @@ const getOrderById = async (req, res, next) => {
        JOIN order_items oi    ON oi.order_id = o.id
        JOIN garment_designs gd ON gd.id = oi.design_id
        LEFT JOIN garment_categories gc ON gc.id = gd.category_id
-       WHERE o.id = $1 AND o.tailor_id = $2`,
+       WHERE o.id = $1 AND (o.tailor_id = $2 OR gd.tailor_id = $2)`,
       [req.params.id, req.user.id]
     )
 
@@ -169,7 +169,11 @@ const shipOrder = async (req, res, next) => {
 
     // Zahialga uurinh esehiig + statusiig shalgaa
     const orderRes = await client.query(
-      `SELECT id, status FROM orders WHERE id = $1 AND tailor_id = $2`,
+      `SELECT o.id, o.status
+       FROM orders o
+       JOIN order_items oi ON oi.order_id = o.id
+       JOIN garment_designs gd ON gd.id = oi.design_id
+       WHERE o.id = $1 AND (o.tailor_id = $2 OR gd.tailor_id = $2)`,
       [req.params.id, req.user.id]
     )
     if (!orderRes.rows.length) throw createError(404, 'Захиалга олдсонгүй')
@@ -256,7 +260,11 @@ const updateOrderStatus = async (req, res, next) => {
 
     // Одоогийн захиалга авах
     const orderResult = await client.query(
-      'SELECT id, status FROM orders WHERE id = $1 AND tailor_id = $2',
+      `SELECT o.id, o.status
+       FROM orders o
+       JOIN order_items oi ON oi.order_id = o.id
+       JOIN garment_designs gd ON gd.id = oi.design_id
+       WHERE o.id = $1 AND (o.tailor_id = $2 OR gd.tailor_id = $2)`,
       [req.params.id, req.user.id]
     )
 

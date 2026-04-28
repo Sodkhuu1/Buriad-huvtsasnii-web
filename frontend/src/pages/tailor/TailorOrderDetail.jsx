@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../../api'
+import OrderChat from '../../components/OrderChat'
 import { STATUS_LABEL, statusBadgeClass, TAILOR_ACTIONS, MEASUREMENT_LABEL, SHIPMENT_MODE_LABEL } from './tailorUtils'
 import './TailorOrderDetail.css'
 
@@ -16,6 +17,8 @@ export default function TailorOrderDetail() {
   const [showShipModal, setShowShipModal] = useState(false)
 
   useEffect(() => {
+    setLoading(true)
+    setError('')
     api.get(`/tailor/orders/${id}`)
       .then(data => setOrder(data.order))
       .catch(err => setError(err.message))
@@ -26,10 +29,11 @@ export default function TailorOrderDetail() {
     setActionLoading(true)
     setError('')
     try {
-      const data = await api.put(`/tailor/orders/${id}/status`, {
+      await api.put(`/tailor/orders/${id}/status`, {
         status: nextStatus,
         note: note || undefined,
       })
+      const data = await api.get(`/tailor/orders/${id}`)
       setOrder(data.order)
       setNote('')
     } catch (err) {
@@ -40,7 +44,7 @@ export default function TailorOrderDetail() {
   }
 
   if (loading) return <div className="td-loading">Ачааллаж байна...</div>
-  if (!order)  return <div className="td-error">Захиалга олдсонгүй</div>
+  if (!order)  return <div className="td-error">{error || 'Захиалга олдсонгүй'}</div>
 
   const actions = TAILOR_ACTIONS[order.status] ?? []
   const measurements = order.measurements ?? {}
@@ -119,6 +123,8 @@ export default function TailorOrderDetail() {
               )}
             </div>
           </div>
+
+          <OrderChat orderId={order.id} title="Захиалагчтай чатлах" />
 
         </div>
 

@@ -9,6 +9,7 @@ const {
   QPAY_CLIENT_ID,
   QPAY_CLIENT_SECRET,
   QPAY_INVOICE_CODE,
+  QPAY_CALLBACK_URL,
 } = process.env
 
 // Mock horim mu? credentials hooson bol tiim
@@ -61,6 +62,9 @@ const createInvoice = async ({ orderId, orderNumber, amount, description }) => {
   }
 
   const token = await getAccessToken()
+  const callbackUrl = QPAY_CALLBACK_URL ||
+    `${process.env.SERVER_URL || 'http://localhost:5000'}/api/payments/qpay/callback?order_id=${orderId}`
+
   const { data } = await axios.post(
     `${QPAY_BASE_URL}/invoice`,
     {
@@ -69,7 +73,7 @@ const createInvoice = async ({ orderId, orderNumber, amount, description }) => {
       invoice_receiver_code: 'terminal',
       invoice_description: description || `Захиалга ${orderNumber}`,
       amount,
-      callback_url: `${process.env.SERVER_URL || 'http://localhost:5000'}/api/payments/qpay/callback?order_id=${orderId}`,
+      callback_url: callbackUrl,
     },
     { headers: { Authorization: `Bearer ${token}` } }
   )

@@ -6,6 +6,43 @@ const pool = require('../db')
 const { createError } = require('../middleware/errorHandler')
 const notify = require('../services/notifications')
 
+const REQUIRED_MEASUREMENTS = {
+  height:   { min: 80, max: 230, label: 'Өндөр' },
+  chest:    { min: 40, max: 180, label: 'Цээж' },
+  waist:    { min: 35, max: 170, label: 'Бүсэлхий' },
+  hip:      { min: 40, max: 190, label: 'Ташаа' },
+  sleeve:   { min: 20, max: 100, label: 'Гарын урт' },
+  shoulder: { min: 20, max: 80, label: 'Мөрний өргөн' },
+}
+
+const normalizeMeasurements = (measurements) => {
+  if (!measurements || typeof measurements !== 'object' || Array.isArray(measurements)) {
+    throw createError(400, 'Хэмжээсийн мэдээлэл шаардлагатай')
+  }
+
+  const normalized = {}
+
+  for (const [key, rule] of Object.entries(REQUIRED_MEASUREMENTS)) {
+    const rawValue = measurements[key]
+    if (rawValue === undefined || rawValue === null || rawValue === '') {
+      throw createError(400, `${rule.label} хэмжээс шаардлагатай`)
+    }
+
+    const value = Number(rawValue)
+    if (!Number.isFinite(value)) {
+      throw createError(400, `${rule.label} зөв тоон утга байх ёстой`)
+    }
+
+    if (value < rule.min || value > rule.max) {
+      throw createError(400, `${rule.label} ${rule.min}-${rule.max} см хооронд байх ёстой`)
+    }
+
+    normalized[key] = Number(value.toFixed(2))
+  }
+
+  return normalized
+}
+
 // POST /api/orders
 const createOrder = async (req, res, next) => {
   // Get a dedicated client from the pool for the transaction
@@ -14,44 +51,45 @@ const createOrder = async (req, res, next) => {
   try {
     await client.query('BEGIN')
 
-    const { design_id, tailor_id, material_option_id, measurements, custom_note } = req.body
+    const { design_id, material_option_id, measurements, custom_note } = req.body
     const customer_id = req.user.id
 
     // ── Validate input ────────────────────────────────────────────────────────
 
-    if (!design_id || !tailor_id || !measurements) {
-      throw createError(400, 'design_id, tailor_id and measurements are required')
+    if (!design_id || !measurements) {
+      throw createError(400, 'design_id and measurements are required')
     }
 
-    const requiredMeasurements = ['height', 'chest', 'waist', 'hip', 'sleeve', 'shoulder']
-    for (const key of requiredMeasurements) {
-      if (!measurements[key]) {
-        throw createError(400, `Missing measurement: ${key}`)
-      }
-    }
+    const normalizedMeasurements = normalizeMeasurements(measurements)
 
     // ── Check design exists ───────────────────────────────────────────────────
 
     const designResult = await client.query(
-      'SELECT id, name, base_price FROM garment_designs WHERE id = $1 AND active = true',
+      'SELECT id, name, base_price, tailor_id FROM garment_designs WHERE id = $1 AND active = true',
       [design_id]
     )
     if (!designResult.rows.length) {
       throw createError(404, 'Garment design not found')
     }
     const design = designResult.rows[0]
+    const tailor_id = design.tailor_id
+
+    if (!tailor_id) {
+      throw createError(400, 'Энэ загварт оёдолчин тохируулагдаагүй байна')
+    }
 
     // ── Calculate price ───────────────────────────────────────────────────────
 
     let extraCost = 0
     if (material_option_id) {
       const matResult = await client.query(
-        'SELECT extra_cost FROM material_options WHERE id = $1 AND available = true',
-        [material_option_id]
+        'SELECT extra_cost FROM material_options WHERE id = $1 AND design_id = $2 AND available = true',
+        [material_option_id, design_id]
       )
-      if (matResult.rows.length) {
-        extraCost = parseFloat(matResult.rows[0].extra_cost)
+      if (!matResult.rows.length) {
+        throw createError(400, 'Сонгосон материал энэ загварт хамаарахгүй эсвэл идэвхгүй байна')
       }
+      extraCost = parseFloat(matResult.rows[0].extra_cost)
     }
 
     const unitPrice = parseFloat(design.base_price) + extraCost
@@ -85,7 +123,7 @@ const createOrder = async (req, res, next) => {
     )
     const snapshotId = snapshotResult.rows[0].id
 
-    for (const [metricCode, metricValue] of Object.entries(measurements)) {
+    for (const [metricCode, metricValue] of Object.entries(normalizedMeasurements)) {
       await client.query(
         `INSERT INTO snapshot_measurements (snapshot_id, metric_code, metric_value)
          VALUES ($1, $2, $3)`,

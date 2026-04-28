@@ -1,5 +1,3 @@
-// Footer iin test — hamgiin enghiin jishee. React Router ni Link ashigldag tul
-// MemoryRouter oor boodog.
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import Footer from '../../src/components/Footer'
@@ -12,22 +10,28 @@ const renderFooter = () =>
   )
 
 describe('Footer', () => {
-  it('brandiin nerig haruulna', () => {
+  it('brand identity and description are visible', () => {
     renderFooter()
-    expect(screen.getByText('БУРИАД')).toBeInTheDocument()
-    expect(screen.getByText('ХУВЦАС')).toBeInTheDocument()
+
+    expect(screen.getByText('Дэнз')).toBeInTheDocument()
+    expect(screen.getByText('буриад хувцасны студи')).toBeInTheDocument()
+    expect(screen.getByText(/уламжлалт буриад хувцасны захиалга/)).toBeInTheDocument()
   })
 
-  it('ued holbos uudiig haruulna', () => {
+  it('renders primary navigation links', () => {
     renderFooter()
-    expect(screen.getByRole('link', { name: 'Нүүр хуудас' })).toHaveAttribute('href', '/')
+
+    expect(screen.getByRole('link', { name: 'Эхлэл' })).toHaveAttribute('href', '/')
     expect(screen.getByRole('link', { name: 'Захиалга өгөх' })).toHaveAttribute('href', '/zahialga')
+    expect(screen.getByRole('link', { name: 'Утга, хэв маяг' })).toHaveAttribute('href', '/huvtsasnii-utga')
     expect(screen.getByRole('link', { name: 'Бидний тухай' })).toHaveAttribute('href', '/bidnii-tuhaid')
   })
 
-  it('holboo barih medeelel baina', () => {
+  it('renders contact details and ordering CTA', () => {
     renderFooter()
+
     expect(screen.getByText(/\+976 9900 0000/)).toBeInTheDocument()
-    expect(screen.getByText(/info@buriad-huvtsas\.mn/)).toBeInTheDocument()
+    expect(screen.getByText(/info@denz\.mn/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Захиалга эхлэх' })).toHaveAttribute('href', '/zahialga')
   })
 })

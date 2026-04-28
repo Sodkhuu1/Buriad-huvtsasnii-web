@@ -1,11 +1,13 @@
-// Navbar iin test — useAuth iig mock hiij baigaa tul API deer zaluulagdahgui
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { vi } from 'vitest'
+import { beforeEach, expect, vi } from 'vitest'
 
-// AuthContext iig modul bolgon mock hiij, useAuth iig test bolgondoo solih
 vi.mock('../../src/context/AuthContext', () => ({
   useAuth: vi.fn(),
+}))
+
+vi.mock('../../src/components/NotificationBell', () => ({
+  default: () => <button aria-label="Мэдэгдэл" />,
 }))
 
 import { useAuth } from '../../src/context/AuthContext'
@@ -19,33 +21,67 @@ const renderNavbar = (path = '/') =>
   )
 
 describe('Navbar', () => {
-  it('nevtreegui uyd "Нэвтрэх" towchtoi bn', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('renders public navigation and login link for guests', () => {
     useAuth.mockReturnValue({ user: null, logout: vi.fn() })
     renderNavbar()
 
-    // desktop + mobile hoyoloo n haragdahgui uchir getAllByRole
+    expect(screen.getByRole('link', { name: 'Дэнз нүүр хуудас' })).toHaveAttribute('href', '/')
+    expect(screen.getAllByRole('link', { name: 'Эхлэл' }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: 'Захиалга' }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: 'Нэвтрэх' }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: 'Захиалга өгөх' }).length).toBeGreaterThan(0)
   })
 
-  it('customer nevtersen uyd "Миний захиалгууд" link haragdana', () => {
+  it('shows customer dashboard link when customer is signed in', () => {
     useAuth.mockReturnValue({
       user: { full_name: 'Bat', role: 'customer' },
       logout: vi.fn(),
     })
     renderNavbar()
 
-    // Desktop bolon mobile menu 2 talaas haragdaj baigaa uchir getAllByRole
-    const links = screen.getAllByRole('link', { name: 'Миний захиалгууд' })
-    expect(links.length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Bat').length).toBeGreaterThan(0)
+    expect(screen.getByText('Захиалагч')).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'Миний захиалгууд' }).length).toBeGreaterThan(0)
   })
 
-  it('admin nevtersen uyd "Админ" link haragdana', () => {
+  it('shows admin management links when admin is signed in', () => {
     useAuth.mockReturnValue({
       user: { full_name: 'Admin', role: 'admin' },
       logout: vi.fn(),
     })
     renderNavbar()
 
-    expect(screen.getAllByRole('link', { name: 'Админ' }).length).toBeGreaterThan(0)
+    expect(screen.getByText('Админ')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Удирдлага' })).toHaveAttribute('href', '/admin')
+    expect(screen.getByRole('link', { name: 'Админ удирдлага' })).toHaveAttribute('href', '/admin')
+  })
+
+  it('shows tailor dashboard links when tailor is signed in', () => {
+    useAuth.mockReturnValue({
+      user: { full_name: 'Oyuna', role: 'tailor' },
+      logout: vi.fn(),
+    })
+    renderNavbar()
+
+    expect(screen.getByText('Оёдолчин')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Самбар' })).toHaveAttribute('href', '/tailor')
+    expect(screen.getByRole('link', { name: 'Оёдолчны самбар' })).toHaveAttribute('href', '/tailor')
+  })
+
+  it('calls logout when the desktop logout button is clicked', () => {
+    const logout = vi.fn()
+    useAuth.mockReturnValue({
+      user: { full_name: 'Bat', role: 'customer' },
+      logout,
+    })
+    renderNavbar()
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Гарах' })[0])
+
+    expect(logout).toHaveBeenCalledTimes(1)
   })
 })
