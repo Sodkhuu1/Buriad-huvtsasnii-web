@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import NotificationBell from './NotificationBell'
 import './Navbar.css'
 
 const navLinks = [
@@ -62,6 +63,8 @@ export default function Navbar() {
         <div className="navbar__actions">
           {user ? (
             <div className="navbar__user">
+              <NotificationBell />
+
               <div className="navbar__user-meta">
                 <span className="navbar__user-name">{user.full_name}</span>
                 <span className="navbar__user-role">

@@ -152,6 +152,57 @@
   overflow-y: auto;
 }
 
+.tailor-main__topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+/* ── Mobile-d sidebar-iig dotood horizontal bar болгоно ────── */
+@media (max-width: 768px) {
+  .tailor-layout {
+    flex-direction: column;
+  }
+  .tailor-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    padding: 12px 14px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .tailor-sidebar__logo {
+    padding: 0 0 10px;
+    border-bottom-color: rgba(201,162,39,0.15);
+  }
+  .tailor-sidebar__user {
+    display: none;  /* mobile-d unaa avahgu ge avah */
+  }
+  .tailor-sidebar__nav {
+    flex-direction: row !important;
+    overflow-x: auto;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
+  }
+  .tailor-sidebar__link {
+    flex-shrink: 0;
+    padding: 8px 14px !important;
+    font-size: 0.82rem !important;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .tailor-sidebar__logout {
+    margin: 0;
+    padding: 8px 14px;
+    font-size: 0.78rem;
+    align-self: flex-start;
+  }
+  .tailor-main {
+    padding: 16px;
+  }
+}
+
 /* ── Shared dashboard components ─────────────────────────── */
 .td-page-title {
   font-family: var(--font-display);

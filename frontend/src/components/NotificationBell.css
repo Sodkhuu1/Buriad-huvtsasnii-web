@@ -1,0 +1,128 @@
+.nb-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.nb-trigger {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 6px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nb-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.nb-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #c1121f;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 1px 5px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 14px;
+}
+
+.nb-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  width: 320px;
+  max-height: 420px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.nb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.nb-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.nb-mark-all {
+  background: none;
+  border: 0;
+  color: #b8451c;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+.nb-mark-all:hover { text-decoration: underline; }
+
+.nb-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.nb-empty {
+  padding: 28px 14px;
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+}
+
+.nb-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid #f4f4f6;
+  padding: 11px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.nb-item:hover { background: #faf9f7; }
+
+.nb-item.is-unread { background: #fff8ef; }
+.nb-item.is-unread:hover { background: #fef0dd; }
+
+.nb-item-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #222;
+  margin-bottom: 2px;
+}
+
+.nb-item-content {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.nb-item-time {
+  font-size: 11px;
+  color: #999;
+}
+
+@media (max-width: 480px) {
+  .nb-dropdown {
+    width: 280px;
+    right: -50px;
+  }
+}

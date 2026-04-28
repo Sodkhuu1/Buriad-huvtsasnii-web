@@ -1,5 +1,6 @@
 import { NavLink, Outlet, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import NotificationBell from '../../components/NotificationBell'
 import './TailorLayout.css'
 
 const navItems = [
@@ -62,6 +63,9 @@ export default function TailorLayout() {
 
       {/* Main content */}
       <main className="tailor-main">
+        <div className="tailor-main__topbar">
+          <NotificationBell />
+        </div>
         <Outlet />
       </main>
     </div>

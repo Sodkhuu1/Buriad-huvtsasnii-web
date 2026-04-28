@@ -109,3 +109,17 @@
   color: var(--crimson);
   margin-top: 4px;
 }
+
+@media (max-width: 600px) {
+  .tdo-card {
+    padding: 14px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tdo-card__meta {
+    align-items: flex-start;
+  }
+  .tdo-card__arrow {
+    display: none;
+  }
+}

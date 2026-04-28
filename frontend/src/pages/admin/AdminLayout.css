@@ -505,6 +505,45 @@
 }
 
 @media (max-width: 768px) {
-  .admin-sidebar { display: none; }
-  .admin-main    { padding: 20px 16px; }
+  .admin-layout {
+    flex-direction: column;
+  }
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    padding: 12px 14px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .admin-sidebar__logo {
+    padding: 0 0 10px;
+  }
+  .admin-sidebar__user,
+  .admin-sidebar__divider {
+    display: none;
+  }
+  .admin-sidebar__nav {
+    flex-direction: row !important;
+    overflow-x: auto;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
+  }
+  .admin-sidebar__link {
+    flex-shrink: 0;
+    padding: 8px 14px !important;
+    font-size: 0.82rem !important;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .admin-sidebar__logout {
+    margin: 0;
+    padding: 8px 14px;
+    font-size: 0.78rem;
+    align-self: flex-start;
+  }
+  .admin-main {
+    padding: 20px 16px;
+  }
 }
