@@ -32,6 +32,8 @@ CREATE TABLE users (
   full_name       VARCHAR(100) NOT NULL,
   email           VARCHAR(150) UNIQUE NOT NULL,
   phone           VARCHAR(20),
+  gender          VARCHAR(30),
+  age             INTEGER CHECK (age IS NULL OR (age >= 0 AND age <= 130)),
   password_hash   TEXT NOT NULL,
   role            user_role NOT NULL DEFAULT 'customer',
   status          account_status NOT NULL DEFAULT 'active',
@@ -277,8 +279,10 @@ CREATE TABLE payments (
 CREATE TABLE shipments (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id            UUID NOT NULL UNIQUE REFERENCES orders(id),
-  carrier_name        VARCHAR(100),
-  tracking_code       VARCHAR(200),
+  mode                VARCHAR(20) NOT NULL DEFAULT 'courier',  -- 'pickup' | 'courier'
+  carrier_name        VARCHAR(100),                            -- зөвхөн courier үед
+  tracking_code       VARCHAR(200),                            -- зөвхөн courier үед
+  note                TEXT,                                    -- pickup үед: авах огноо/цаг/утас
   status              shipment_status NOT NULL DEFAULT 'preparing',
   shipped_at          TIMESTAMPTZ,
   delivered_at        TIMESTAMPTZ,
@@ -348,3 +352,5 @@ CREATE INDEX idx_orders_tailor ON orders(tailor_id);
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_notifications_unread ON notifications(user_id) WHERE is_read = FALSE;
+CREATE UNIQUE INDEX idx_consultation_threads_order_unique ON consultation_threads(order_id) WHERE order_id IS NOT NULL;
+CREATE INDEX idx_consultation_messages_thread_sent ON consultation_messages(thread_id, sent_at);

@@ -7,6 +7,7 @@ const navItems = [
   { path: '/tailor',          label: 'Хяналтын самбар', icon: '▦', end: true },
   { path: '/tailor/orders',   label: 'Захиалгууд',       icon: '≡' },
   { path: '/tailor/designs',  label: 'Загварууд',         icon: '✂' },
+  { path: '/tailor/profile',  label: 'Профайл',           icon: '◉' },
 ]
 
 export default function TailorLayout() {
@@ -65,6 +66,9 @@ export default function TailorLayout() {
       <main className="tailor-main">
         <div className="tailor-main__topbar">
           <NotificationBell />
+          <NavLink to="/tailor/profile" className="tailor-main__profile-link">
+            {user.full_name}
+          </NavLink>
         </div>
         <Outlet />
       </main>

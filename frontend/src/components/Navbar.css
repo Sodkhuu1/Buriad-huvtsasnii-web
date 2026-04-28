@@ -161,6 +161,18 @@
   flex-direction: column;
   align-items: flex-end;
   line-height: 1.2;
+  text-decoration: none;
+  border-radius: 12px;
+  padding: 4px 6px;
+  transition: var(--transition);
+}
+
+.navbar__user-meta:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.navbar--dark-text .navbar__user-meta:hover {
+  background: rgba(21, 37, 54, 0.06);
 }
 
 .navbar__user-name {
@@ -317,10 +329,12 @@
 }
 
 .navbar__mobile-user {
+  display: block;
   padding: 12px 4px 6px;
   color: var(--gold-light);
   font-size: 0.82rem;
   font-weight: 700;
+  text-decoration: none;
 }
 
 .navbar__mobile-logout {

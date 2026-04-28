@@ -11,7 +11,7 @@ export default function Footer() {
               <span className="footer__logo-mark">Д</span>
               <div className="footer__logo-text">
                 <span className="footer__logo-main">Дэнз</span>
-                <span className="footer__logo-sub">буриад хувцасны студи</span>
+                <span className="footer__logo-sub">буриад хувцасны захиалга</span>
               </div>
             </div>
 

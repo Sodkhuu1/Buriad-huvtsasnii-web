@@ -154,8 +154,28 @@
 
 .tailor-main__topbar {
   display: flex;
+  align-items: center;
+  gap: 12px;
   justify-content: flex-end;
   margin-bottom: 16px;
+}
+
+.tailor-main__profile-link {
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(21, 37, 54, 0.08);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.tailor-main__profile-link:hover {
+  color: var(--crimson);
+  border-color: rgba(141, 35, 50, 0.16);
 }
 
 /* ── Mobile-d sidebar-iig dotood horizontal bar болгоно ────── */

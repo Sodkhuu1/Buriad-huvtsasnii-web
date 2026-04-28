@@ -9,6 +9,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import MyOrders from './pages/MyOrders'
 import MyOrderDetail from './pages/MyOrderDetail'
+import Profile from './pages/Profile'
 import Footer from './components/Footer'
 import TailorLayout from './pages/tailor/TailorLayout'
 import TailorDashboard from './pages/tailor/TailorDashboard'
@@ -56,6 +57,7 @@ function App() {
         <Route path="orders" element={<TailorOrders />} />
         <Route path="orders/:id" element={<TailorOrderDetail />} />
         <Route path="designs" element={<TailorDesigns />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
 
       {/* Customer сайт */}
@@ -67,6 +69,14 @@ function App() {
             <Route path="/zahialga" element={<Zahialga />} />
             <Route path="/huvtsasnii-utga" element={<HuvtsasniiUtga />} />
             <Route path="/bidnii-tuhaid" element={<BidniinTuhaid />} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute roles={['customer']}>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/my-orders"
               element={

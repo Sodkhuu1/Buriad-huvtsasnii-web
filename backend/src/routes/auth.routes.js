@@ -4,7 +4,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { register, login, logout, getMe } = require('../controllers/auth.controller');
+const { register, login, logout, getMe, getProfile, updateProfile } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth');
 
 // POST /api/auth/register — create a new account (sets auth cookie)
@@ -18,5 +18,9 @@ router.post('/logout', logout);
 
 // GET /api/auth/me — get my own user info (requires login)
 router.get('/me', protect, getMe);
+
+// GET/PATCH /api/auth/profile — view/update my profile
+router.get('/profile', protect, getProfile);
+router.patch('/profile', protect, updateProfile);
 
 module.exports = router;

@@ -14,7 +14,7 @@ describe('Footer', () => {
     renderFooter()
 
     expect(screen.getByText('Дэнз')).toBeInTheDocument()
-    expect(screen.getByText('буриад хувцасны студи')).toBeInTheDocument()
+    expect(screen.getByText('буриад хувцасны захиалга')).toBeInTheDocument()
     expect(screen.getByText(/уламжлалт буриад хувцасны захиалга/)).toBeInTheDocument()
   })
 

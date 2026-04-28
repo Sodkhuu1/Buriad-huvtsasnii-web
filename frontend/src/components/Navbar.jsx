@@ -35,6 +35,11 @@ export default function Navbar() {
 
   const isHome = location.pathname === '/'
   const darkText = !scrolled && !isHome
+  const profilePath = user?.role === 'tailor'
+    ? '/tailor/profile'
+    : user?.role === 'admin'
+      ? '/admin'
+      : '/profile'
 
   return (
     <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}${darkText ? ' navbar--dark-text' : ''}`}>
@@ -43,7 +48,7 @@ export default function Navbar() {
           <span className="navbar__logo-mark">Д</span>
           <span className="navbar__logo-text">
             <span className="navbar__logo-main">Дэнз</span>
-            <span className="navbar__logo-sub">буриад хувцасны студи</span>
+            <span className="navbar__logo-sub">буриад хувцасны захиалга</span>
           </span>
         </NavLink>
 
@@ -65,14 +70,14 @@ export default function Navbar() {
             <div className="navbar__user">
               <NotificationBell />
 
-              <div className="navbar__user-meta">
+              <NavLink to={profilePath} className="navbar__user-meta" aria-label="Профайл">
                 <span className="navbar__user-name">{user.full_name}</span>
                 <span className="navbar__user-role">
                   {user.role === 'customer' && 'Захиалагч'}
                   {user.role === 'admin' && 'Админ'}
                   {user.role === 'tailor' && 'Оёдолчин'}
                 </span>
-              </div>
+              </NavLink>
 
               {user.role === 'customer' && (
                 <NavLink to="/my-orders" className="navbar__dashboard-link">Миний захиалгууд</NavLink>
@@ -110,7 +115,7 @@ export default function Navbar() {
           <span className="navbar__mobile-mark">Д</span>
           <div>
             <strong>Дэнз</strong>
-            <span>Буриад хувцасны студи</span>
+            <span>Буриад хувцасны захиалга</span>
           </div>
         </div>
 
@@ -127,7 +132,7 @@ export default function Navbar() {
 
         {user ? (
           <>
-            <div className="navbar__mobile-user">{user.full_name}</div>
+            <NavLink to={profilePath} className="navbar__mobile-user">{user.full_name}</NavLink>
             {user.role === 'customer' && (
               <NavLink to="/my-orders" className="navbar__mobile-link">Миний захиалгууд</NavLink>
             )}
