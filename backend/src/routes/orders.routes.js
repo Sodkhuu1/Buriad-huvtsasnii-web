@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { createOrder, getMyOrders, getMyOrderById, cancelOrder, confirmDelivery } = require('../controllers/orders.controller')
+const { createOrder, getMyOrders, getMyOrderById, cancelOrder, confirmDelivery, createReview } = require('../controllers/orders.controller')
 const { protect } = require('../middleware/auth')
 
 // All order routes require login
@@ -20,5 +20,8 @@ router.patch('/my/:id/cancel', cancelOrder)
 
 // PATCH /api/orders/my/:id/confirm-delivery — zahialgа huleen avsanaa batalgaajuulna
 router.patch('/my/:id/confirm-delivery', confirmDelivery)
+
+// POST /api/orders/my/:id/review — completed zahialgand uneglee uldeene
+router.post('/my/:id/review', createReview)
 
 module.exports = router

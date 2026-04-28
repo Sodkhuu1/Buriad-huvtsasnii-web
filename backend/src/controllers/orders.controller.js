@@ -4,6 +4,7 @@
 
 const pool = require('../db')
 const { createError } = require('../middleware/errorHandler')
+const notify = require('../services/notifications')
 
 // POST /api/orders
 const createOrder = async (req, res, next) => {
@@ -99,6 +100,14 @@ const createOrder = async (req, res, next) => {
        VALUES ($1, 'submitted', $2, 'Захиалга үүсгэгдлээ')`,
       [order.id, customer_id]
     )
+
+    // Oyodolchin shine zahialga avlaa gej medeglel
+    await notify.send(client, {
+      userId: tailor_id,
+      orderId: order.id,
+      title: 'Шинэ захиалга',
+      content: `${order.order_number} дугаартай захиалга ирлээ.`,
+    })
 
     await client.query('COMMIT')
 
@@ -201,6 +210,12 @@ const getMyOrderById = async (req, res, next) => {
       [req.params.id]
     )
 
+    // Aldartai uldeesen review baival hamtad nih avah
+    const reviewResult = await pool.query(
+      `SELECT rating, comment, created_at FROM reviews WHERE order_id = $1`,
+      [req.params.id]
+    )
+
     res.json({
       success: true,
       order: {
@@ -208,6 +223,7 @@ const getMyOrderById = async (req, res, next) => {
         measurements,
         history: historyResult.rows,
         shipment: shipResult.rows[0] ?? null,
+        review: reviewResult.rows[0] ?? null,
       },
     })
   } catch (err) {
@@ -254,6 +270,20 @@ const cancelOrder = async (req, res, next) => {
       [req.params.id, currentStatus, req.user.id, note || 'Захиалагч цуцаллаа']
     )
 
+    // Tailor-d medeglel — gehgu tailor_id baigaa esekhig shalga
+    const tailorRes = await client.query(
+      `SELECT tailor_id, order_number FROM orders WHERE id = $1`,
+      [req.params.id]
+    )
+    if (tailorRes.rows[0]?.tailor_id) {
+      await notify.send(client, {
+        userId: tailorRes.rows[0].tailor_id,
+        orderId: req.params.id,
+        title: 'Захиалга цуцлагдлаа',
+        content: `${tailorRes.rows[0].order_number} захиалгыг захиалагч цуцаллаа.`,
+      })
+    }
+
     await client.query('COMMIT')
     res.json({ success: true, order: updated.rows[0] })
   } catch (err) {
@@ -294,6 +324,20 @@ const confirmDelivery = async (req, res, next) => {
       [req.params.id, req.user.id]
     )
 
+    // Oyodolchind medeglel
+    const tRes = await client.query(
+      `SELECT tailor_id, order_number FROM orders WHERE id = $1`,
+      [req.params.id]
+    )
+    if (tRes.rows[0]?.tailor_id) {
+      await notify.send(client, {
+        userId: tRes.rows[0].tailor_id,
+        orderId: req.params.id,
+        title: 'Захиалга дууслаа',
+        content: `${tRes.rows[0].order_number} захиалгыг захиалагч хүлээн авлаа.`,
+      })
+    }
+
     await client.query('COMMIT')
     res.json({ success: true, order: updated.rows[0] })
   } catch (err) {
@@ -304,4 +348,80 @@ const confirmDelivery = async (req, res, next) => {
   }
 }
 
-module.exports = { createOrder, getMyOrders, getMyOrderById, cancelOrder, confirmDelivery }
+// POST /api/orders/my/:id/review
+// Zovkhon completed zahialgand 1-5 od + setgegdsel ulgeenee, oyodolchni ratingiig dahin tootsno
+const createReview = async (req, res, next) => {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    const { rating, comment } = req.body
+
+    // Rating validation
+    const ratingNum = parseInt(rating)
+    if (!Number.isInteger(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      throw createError(400, 'Үнэлгээ 1-5 хооронд байх ёстой')
+    }
+
+    // Zahialgа uurinh esehiig + completed esehiig + tailor_id-iig avah
+    const orderResult = await client.query(
+      `SELECT id, status, tailor_id FROM orders WHERE id = $1 AND customer_id = $2`,
+      [req.params.id, req.user.id]
+    )
+    if (!orderResult.rows.length) throw createError(404, 'Захиалга олдсонгүй')
+
+    const order = orderResult.rows[0]
+    if (order.status !== 'completed') {
+      throw createError(400, 'Зөвхөн дууссан захиалгад үнэлгээ өгөх боломжтой')
+    }
+    if (!order.tailor_id) throw createError(400, 'Оёдолчинтой холбоогүй захиалга')
+
+    // Aldartai review baival davhar uldeehgui (schema-d order_id UNIQUE)
+    const existing = await client.query(
+      `SELECT id FROM reviews WHERE order_id = $1`,
+      [req.params.id]
+    )
+    if (existing.rows.length) {
+      throw createError(409, 'Энэ захиалгад үнэлгээ үлдээгдсэн байна')
+    }
+
+    // Review insert (auto-approve)
+    const inserted = await client.query(
+      `INSERT INTO reviews (order_id, customer_id, tailor_id, rating, comment, approved)
+       VALUES ($1, $2, $3, $4, $5, TRUE)
+       RETURNING rating, comment, created_at`,
+      [req.params.id, req.user.id, order.tailor_id, ratingNum, comment || null]
+    )
+
+    // Tailor-iin durlaj rating-iig dahin tootsoo (zovkhon approved review-uudaas)
+    await client.query(
+      `UPDATE tailor_profiles
+       SET rating = COALESCE(
+         (SELECT ROUND(AVG(rating)::numeric, 2)
+          FROM reviews
+          WHERE tailor_id = $1 AND approved = TRUE),
+         0
+       )
+       WHERE user_id = $1`,
+      [order.tailor_id]
+    )
+
+    // Oyodolchind medeglel — shine uneglee
+    await notify.send(client, {
+      userId: order.tailor_id,
+      orderId: req.params.id,
+      title: 'Шинэ үнэлгээ',
+      content: `Захиалгад ${ratingNum}/5 одтой үнэлгээ ирлээ.`,
+    })
+
+    await client.query('COMMIT')
+    res.status(201).json({ success: true, review: inserted.rows[0] })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    next(err)
+  } finally {
+    client.release()
+  }
+}
+
+module.exports = { createOrder, getMyOrders, getMyOrderById, cancelOrder, confirmDelivery, createReview }

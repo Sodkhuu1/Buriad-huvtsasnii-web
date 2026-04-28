@@ -2,6 +2,16 @@
 
 const pool = require('../db')
 const { createError } = require('../middleware/errorHandler')
+const notify = require('../services/notifications')
+
+// Status -> medeglelin gar utga (zahialagchid harah)
+const STATUS_NOTIFY_TEXT = {
+  accepted:      { title: 'Захиалга батлагдлаа',     content: 'Оёдолчин таны захиалгыг хүлээн авлаа. Та урьдчилгаа төлбөрөө хийж эхэлж болно.' },
+  rejected:      { title: 'Захиалга татгалзагдлаа',  content: 'Уучлаарай, оёдолчин таны захиалгыг хүлээж аваагүй.' },
+  in_production: { title: 'Үйлдвэрлэлд орлоо',       content: 'Таны хувцасны үйлдвэрлэл эхэллээ.' },
+  ready:         { title: 'Захиалга бэлэн',          content: 'Таны хувцас бэлэн боллоо. Удахгүй хүргэлтэд гарна.' },
+  delivered:     { title: 'Хүргэгдлээ',              content: 'Таны захиалга хүргэгдсэн гэж тэмдэглэгдлээ. Хүлээн авсан бол баталгаажуулна уу.' },
+}
 
 // Zovshoorogdson status shilijill (DB lowercase ENUM-tai taarna)
 // Anhaar: ready -> shipped statusiig 'shipOrder' endpoint-d shipment data-tai hamtad nih ajilluulna
@@ -206,6 +216,22 @@ const shipOrder = async (req, res, next) => {
       [req.params.id, req.user.id, noteForHistory]
     )
 
+    // Zahialagchid medeglel — pickup esvel courier-eer ilgeegdle
+    const customerRes = await client.query(
+      `SELECT customer_id, order_number FROM orders WHERE id = $1`,
+      [req.params.id]
+    )
+    if (customerRes.rows[0]) {
+      await notify.send(client, {
+        userId: customerRes.rows[0].customer_id,
+        orderId: req.params.id,
+        title: mode === 'pickup' ? 'Захиалга бэлэн — авч очно уу' : 'Захиалга хүргэлтэд гарлаа',
+        content: mode === 'pickup'
+          ? `Авах нөхцөл: ${note}`
+          : `${carrier_name}-аар илгээгдлээ. Tracking: ${tracking_code}`,
+      })
+    }
+
     await client.query('COMMIT')
     res.json({ success: true, order: updated.rows[0] })
   } catch (err) {
@@ -269,6 +295,21 @@ const updateOrderStatus = async (req, res, next) => {
        VALUES ($1, $2, $3, $4, $5)`,
       [req.params.id, currentStatus, nextStatus, req.user.id, note || null]
     )
+
+    // Zahialagchid medeglel ilgeene (statusiin daguu)
+    if (STATUS_NOTIFY_TEXT[nextStatus]) {
+      const cRes = await client.query(
+        `SELECT customer_id FROM orders WHERE id = $1`,
+        [req.params.id]
+      )
+      if (cRes.rows[0]) {
+        await notify.send(client, {
+          userId: cRes.rows[0].customer_id,
+          orderId: req.params.id,
+          ...STATUS_NOTIFY_TEXT[nextStatus],
+        })
+      }
+    }
 
     await client.query('COMMIT')
     res.json({ success: true, order: updated.rows[0] })

@@ -3,6 +3,7 @@
 const pool = require('../db')
 const { createError } = require('../middleware/errorHandler')
 const qpay = require('../services/qpay')
+const notify = require('../services/notifications')
 
 // POST /api/payments/orders/:id/invoice
 // Zahialagch torlog jendlee tolboriin invoice usgenee
@@ -137,6 +138,20 @@ const checkPayment = async (req, res, next) => {
          VALUES ($1, 'accepted', 'deposit_paid', $2, 'QPay-ээр төлбөр хийгдлээ')`,
         [pay.order_id, req.user.id]
       )
+
+      // Oyodolchind medeglel
+      const tRes = await client.query(
+        `SELECT tailor_id, order_number FROM orders WHERE id = $1`,
+        [pay.order_id]
+      )
+      if (tRes.rows[0]?.tailor_id) {
+        await notify.send(client, {
+          userId: tRes.rows[0].tailor_id,
+          orderId: pay.order_id,
+          title: 'Урьдчилгаа төлбөр ирлээ',
+          content: `${tRes.rows[0].order_number} захиалга төлөгдсөн. Үйлдвэрлэлээ эхлүүлж болно.`,
+        })
+      }
     }
 
     await client.query('COMMIT')
