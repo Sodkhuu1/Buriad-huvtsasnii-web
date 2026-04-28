@@ -23,11 +23,30 @@ const chatRoutes        = require('./routes/chat.routes')
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Render/Vercel ard reverse proxy bdg uchir secure cookie zovshoorold heregtei
+app.set('trust proxy', 1);
+
+// CLIENT_URL-d olon URL-iig comma-aar salgaj bichij bolno
+// jisheelbel: https://my-app.vercel.app,https://preview.vercel.app
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 // --- Middleware ---
-// cors: allows our React frontend (on port 5173) to call this backend (on port 5000)
-// credentials: true is required so the browser will send/receive cookies
+// cors: frontend (Vercel) → backend (Render) cross-origin call zovshoorono
+// credentials: true bnal browser cookie ilgeene
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, cb) => {
+    // server-server eswel curl-aar oroh zergiig zovshooroh (origin baikhgui)
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    // Vercel preview URL-uudig zovshoorh, jish: my-app-git-branch-user.vercel.app
+    if (process.env.ALLOW_VERCEL_PREVIEWS === 'true' && /\.vercel\.app$/.test(new URL(origin).hostname)) {
+      return cb(null, true);
+    }
+    return cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
 }));
 

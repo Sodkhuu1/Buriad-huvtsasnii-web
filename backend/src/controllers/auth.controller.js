@@ -22,11 +22,16 @@ const generateToken = (user) => {
 const AUTH_COOKIE_NAME = 'auth_token';
 const SEVEN_DAYS_MS    = 7 * 24 * 60 * 60 * 1000;
 
+// Production-d frontend Vercel, backend Render — domain ondoo
+// Cross-site cookie ywahad sameSite='none' + secure=true zaaval kheregtei
+const isProd = process.env.NODE_ENV === 'production';
+const cookieSameSite = isProd ? 'none' : 'lax';
+
 const setAuthCookie = (res, token) => {
   res.cookie(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
-    secure:   process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure:   isProd,
+    sameSite: cookieSameSite,
     maxAge:   SEVEN_DAYS_MS,
     path:     '/',
   });
@@ -35,8 +40,8 @@ const setAuthCookie = (res, token) => {
 const clearAuthCookie = (res) => {
   res.clearCookie(AUTH_COOKIE_NAME, {
     httpOnly: true,
-    secure:   process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure:   isProd,
+    sameSite: cookieSameSite,
     path:     '/',
   });
 };

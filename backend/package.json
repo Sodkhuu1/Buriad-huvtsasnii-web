@@ -7,8 +7,12 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "migrate": "node scripts/migrate.js",
+    "build": "npm run migrate",
     "test": "vitest run",
     "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@gradio/client": "^2.2.0",

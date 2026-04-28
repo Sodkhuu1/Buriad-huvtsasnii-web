@@ -4,17 +4,32 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// Pool = a set of reusable database connections
-// Instead of opening/closing a connection every time, we keep a pool ready
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-});
+// Render zereg cloud DB-d ihevchlen DATABASE_URL gej negen mor utga ogdog
+// Local-d bol DB_HOST/DB_PORT/... gj saljval ashiglana
+const useConnectionString = Boolean(process.env.DATABASE_URL);
 
-// Test the connection when the server starts
+// Production-d SSL zaaval kheregtei, lok DB-d kheregggui
+const sslConfig =
+  process.env.PGSSL === 'disable'
+    ? false
+    : useConnectionString || process.env.NODE_ENV === 'production'
+      ? { rejectUnauthorized: false }
+      : false;
+
+const pool = new Pool(
+  useConnectionString
+    ? { connectionString: process.env.DATABASE_URL, ssl: sslConfig }
+    : {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        ssl: sslConfig,
+      }
+);
+
+// Server start hiihed neg udaa shalgaad ujig
 pool.connect((err, client, release) => {
   if (err) {
     console.error('Database connection failed:', err.message);
