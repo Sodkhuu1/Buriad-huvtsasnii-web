@@ -3,12 +3,13 @@
 const pool = require('../db')
 const { createError } = require('../middleware/errorHandler')
 
-// Зөвшөөрөгдсөн статус шилжилт (DB lowercase ENUM-тай таарна)
+// Zovshoorogdson status shilijill (DB lowercase ENUM-tai taarna)
+// Anhaar: ready -> shipped statusiig 'shipOrder' endpoint-d shipment data-tai hamtad nih ajilluulna
 const ALLOWED_TRANSITIONS = {
   submitted:     ['accepted', 'rejected'],
   deposit_paid:  ['in_production'],
   in_production: ['ready'],
-  ready:         ['shipped'],
+  shipped:       ['delivered'],
 }
 
 // ─── GET /api/tailor/stats ───────────────────────────────────────────────────
@@ -119,12 +120,99 @@ const getOrderById = async (req, res, next) => {
     const measurements = {}
     measResult.rows.forEach(r => { measurements[r.metric_code] = r.metric_value })
 
+    // Hurgeltiin medeellig hamtad nih avah
+    const shipRes = await pool.query(
+      `SELECT mode, carrier_name, tracking_code, note, status,
+              shipped_at, delivered_at
+       FROM shipments WHERE order_id = $1`,
+      [req.params.id]
+    )
+    const shipment = shipRes.rows[0] ?? null
+
     res.json({
       success: true,
-      order: { ...orderResult.rows[0], measurements },
+      order: { ...orderResult.rows[0], measurements, shipment },
     })
   } catch (err) {
     next(err)
+  }
+}
+
+// ─── POST /api/tailor/orders/:id/ship ──────────────────────────────────────
+// Захиалгыг "ready" -> "shipped" болгох + shipments mörd hadgalna
+// Body: { mode: 'pickup'|'courier', carrier_name?, tracking_code?, note? }
+const shipOrder = async (req, res, next) => {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    const { mode, carrier_name, tracking_code, note } = req.body
+    if (!['pickup', 'courier'].includes(mode)) {
+      throw createError(400, "mode = 'pickup' эсвэл 'courier' байх ёстой")
+    }
+    if (mode === 'courier' && (!carrier_name || !tracking_code)) {
+      throw createError(400, 'Хүргэлтийн нэр болон tracking код шаардлагатай')
+    }
+    if (mode === 'pickup' && !note) {
+      throw createError(400, 'Очиж авах нөхцөлийг (огноо, цаг, утас) бичнэ үү')
+    }
+
+    // Zahialga uurinh esehiig + statusiig shalgaa
+    const orderRes = await client.query(
+      `SELECT id, status FROM orders WHERE id = $1 AND tailor_id = $2`,
+      [req.params.id, req.user.id]
+    )
+    if (!orderRes.rows.length) throw createError(404, 'Захиалга олдсонгүй')
+    if (orderRes.rows[0].status !== 'ready') {
+      throw createError(400, 'Зөвхөн "Бэлэн" төлөвт байгаа захиалгыг илгээх боломжтой')
+    }
+
+    // Shipment mor (UPSERT — аль хэдийн зурвас үүсгэсэн ч хэвээр шинэчлэгдэх боломжтой)
+    await client.query(
+      `INSERT INTO shipments (order_id, mode, carrier_name, tracking_code, note, status, shipped_at)
+       VALUES ($1, $2, $3, $4, $5, 'in_transit', NOW())
+       ON CONFLICT (order_id) DO UPDATE
+         SET mode = EXCLUDED.mode,
+             carrier_name = EXCLUDED.carrier_name,
+             tracking_code = EXCLUDED.tracking_code,
+             note = EXCLUDED.note,
+             status = 'in_transit',
+             shipped_at = NOW()`,
+      [
+        req.params.id,
+        mode,
+        mode === 'courier' ? carrier_name : null,
+        mode === 'courier' ? tracking_code : null,
+        note || null,
+      ]
+    )
+
+    // Order toloviig 'shipped' bolgono
+    const updated = await client.query(
+      `UPDATE orders SET status = 'shipped', updated_at = NOW()
+       WHERE id = $1
+       RETURNING id, order_number, status, total_amount, created_at`,
+      [req.params.id]
+    )
+
+    // Tuuh
+    const noteForHistory = mode === 'pickup'
+      ? `Очиж авах: ${note}`
+      : `Хүргэлт: ${carrier_name} (${tracking_code})`
+
+    await client.query(
+      `INSERT INTO order_status_history (order_id, from_status, to_status, changed_by_id, note)
+       VALUES ($1, 'ready', 'shipped', $2, $3)`,
+      [req.params.id, req.user.id, noteForHistory]
+    )
+
+    await client.query('COMMIT')
+    res.json({ success: true, order: updated.rows[0] })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    next(err)
+  } finally {
+    client.release()
   }
 }
 
@@ -166,7 +254,16 @@ const updateOrderStatus = async (req, res, next) => {
       [nextStatus, req.params.id]
     )
 
-    // Түүх бичих
+    // Hereg bol shipment-iig delivered bolgoh
+    if (nextStatus === 'delivered') {
+      await client.query(
+        `UPDATE shipments SET status = 'delivered', delivered_at = NOW()
+         WHERE order_id = $1`,
+        [req.params.id]
+      )
+    }
+
+    // Tuuh bichih
     await client.query(
       `INSERT INTO order_status_history (order_id, from_status, to_status, changed_by_id, note)
        VALUES ($1, $2, $3, $4, $5)`,
@@ -264,4 +361,4 @@ const deleteDesign = async (req, res, next) => {
   }
 }
 
-module.exports = { getStats, getOrders, getOrderById, updateOrderStatus, getDesigns, createDesign, updateDesign, deleteDesign }
+module.exports = { getStats, getOrders, getOrderById, updateOrderStatus, shipOrder, getDesigns, createDesign, updateDesign, deleteDesign }
