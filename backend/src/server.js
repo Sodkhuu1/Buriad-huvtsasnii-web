@@ -6,6 +6,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
+const { runMigrations } = require('../scripts/migrate');
 const { errorHandler } = require('./middleware/errorHandler');
 
 // Import routes
@@ -81,7 +82,16 @@ app.use((req, res) => {
 // Error handler — must be LAST middleware
 app.use(errorHandler);
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await runMigrations();
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('Server startup failed:', err.message);
+    process.exit(1);
+  }
+};
+
+startServer();
