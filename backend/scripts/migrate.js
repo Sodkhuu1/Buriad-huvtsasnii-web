@@ -5,6 +5,28 @@ const pool = require('../src/db')
 const migrationsDir = path.resolve(__dirname, '../../database/migrations')
 const schemaFile = path.resolve(__dirname, '../../database/schema.sql')
 const baseSchemaMarker = '000_base_schema.sql'
+const ignorableSchemaErrorCodes = new Set(['42P07', '42710'])
+
+const applySqlStatementBatch = async (client, sql, { tolerateExistingObjects = false } = {}) => {
+  const statements = sql
+    .split(/;\s*(?:\r?\n|$)/)
+    .map((statement) => statement.trim())
+    .filter(Boolean)
+
+  for (const statement of statements) {
+    try {
+      await client.query(statement)
+    } catch (err) {
+      if (tolerateExistingObjects && ignorableSchemaErrorCodes.has(err.code)) {
+        continue
+      }
+
+      const statementPreview = statement.split(/\r?\n/).slice(0, 3).join(' ')
+      err.message = `${err.message} while running: ${statementPreview}`
+      throw err
+    }
+  }
+}
 
 const runMigrations = async ({ closePool = false } = {}) => {
   const client = await pool.connect()
@@ -27,14 +49,16 @@ const runMigrations = async ({ closePool = false } = {}) => {
     const hasUsersTable = Boolean(schemaState.rows[0].users_table)
     const hasGarmentDesignsTable = Boolean(schemaState.rows[0].garment_designs_table)
 
-    if (!hasUsersTable && !hasGarmentDesignsTable) {
+    if (!hasUsersTable || !hasGarmentDesignsTable) {
       if (!fs.existsSync(schemaFile)) {
         throw new Error(`Schema file not found: ${schemaFile}`)
       }
 
       console.log('Applying base schema: database/schema.sql')
       const baseSchemaSql = fs.readFileSync(schemaFile, 'utf8')
-      await client.query(baseSchemaSql)
+      await applySqlStatementBatch(client, baseSchemaSql, {
+        tolerateExistingObjects: hasUsersTable || hasGarmentDesignsTable,
+      })
       await client.query(
         `
           INSERT INTO schema_migrations (filename)
@@ -42,10 +66,6 @@ const runMigrations = async ({ closePool = false } = {}) => {
           ON CONFLICT (filename) DO NOTHING
         `,
         [baseSchemaMarker]
-      )
-    } else if (hasUsersTable && !hasGarmentDesignsTable) {
-      throw new Error(
-        'Database schema is incomplete: users exists but garment_designs is missing. Apply database/schema.sql once or add a backfill migration for the missing catalog tables.'
       )
     }
 
