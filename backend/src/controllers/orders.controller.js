@@ -43,6 +43,30 @@ const normalizeMeasurements = (measurements) => {
   return normalized
 }
 
+const normalizeOrderItems = (body) => {
+  if (Array.isArray(body.items)) {
+    return body.items.map(item => ({
+      design_id: item.design_id,
+      material_option_id: item.material_option_id,
+      quantity: Number(item.quantity || 1),
+      custom_note: item.custom_note,
+    }))
+  }
+
+  return [{
+    design_id: body.design_id,
+    material_option_id: body.material_option_id,
+    quantity: 1,
+    custom_note: body.custom_note,
+  }]
+}
+
+const getDesignListTitle = (items) => {
+  if (!items.length) return null
+  if (items.length === 1) return items[0].design_name
+  return `${items[0].design_name} + ${items.length - 1}`
+}
+
 // POST /api/orders
 const createOrder = async (req, res, next) => {
   // Get a dedicated client from the pool for the transaction
@@ -51,48 +75,72 @@ const createOrder = async (req, res, next) => {
   try {
     await client.query('BEGIN')
 
-    const { design_id, material_option_id, measurements, custom_note } = req.body
+    const { measurements } = req.body
     const customer_id = req.user.id
 
     // ── Validate input ────────────────────────────────────────────────────────
 
-    if (!design_id || !measurements) {
-      throw createError(400, 'design_id and measurements are required')
+    const items = normalizeOrderItems(req.body)
+    if (!items.length || items.some(item => !item.design_id) || !measurements) {
+      throw createError(400, 'items and measurements are required')
+    }
+
+    if (items.some(item => !Number.isInteger(item.quantity) || item.quantity < 1)) {
+      throw createError(400, 'Тоо ширхэг 1-ээс дээш байх ёстой')
     }
 
     const normalizedMeasurements = normalizeMeasurements(measurements)
 
     // ── Check design exists ───────────────────────────────────────────────────
 
+    const designIds = [...new Set(items.map(item => item.design_id))]
     const designResult = await client.query(
-      'SELECT id, name, base_price, tailor_id FROM garment_designs WHERE id = $1 AND active = true',
-      [design_id]
+      'SELECT id, name, base_price, tailor_id FROM garment_designs WHERE id = ANY($1::uuid[]) AND active = true',
+      [designIds]
     )
-    if (!designResult.rows.length) {
+    if (designResult.rows.length !== designIds.length) {
       throw createError(404, 'Garment design not found')
     }
-    const design = designResult.rows[0]
-    const tailor_id = design.tailor_id
+    const designsById = new Map(designResult.rows.map(row => [row.id, row]))
+    const tailorIds = [...new Set(designResult.rows.map(row => row.tailor_id).filter(Boolean))]
 
-    if (!tailor_id) {
+    if (!tailorIds.length || designResult.rows.some(row => !row.tailor_id)) {
       throw createError(400, 'Энэ загварт оёдолчин тохируулагдаагүй байна')
     }
 
+    if (tailorIds.length > 1) {
+      throw createError(400, 'Нэг захиалгад зөвхөн нэг оёдолчны загварууд сонгоно уу')
+    }
+    const tailor_id = tailorIds[0]
+
     // ── Calculate price ───────────────────────────────────────────────────────
 
-    let extraCost = 0
-    if (material_option_id) {
-      const matResult = await client.query(
-        'SELECT extra_cost FROM material_options WHERE id = $1 AND design_id = $2 AND available = true',
-        [material_option_id, design_id]
+    const materialIds = items.map(item => item.material_option_id).filter(Boolean)
+    const materialResult = materialIds.length
+      ? await client.query(
+        'SELECT id, design_id, extra_cost FROM material_options WHERE id = ANY($1::uuid[]) AND available = true',
+        [[...new Set(materialIds)]]
       )
-      if (!matResult.rows.length) {
-        throw createError(400, 'Сонгосон материал энэ загварт хамаарахгүй эсвэл идэвхгүй байна')
-      }
-      extraCost = parseFloat(matResult.rows[0].extra_cost)
-    }
+      : { rows: [] }
+    const materialsById = new Map(materialResult.rows.map(row => [row.id, row]))
 
-    const unitPrice = parseFloat(design.base_price) + extraCost
+    const pricedItems = items.map(item => {
+      const design = designsById.get(item.design_id)
+      let extraCost = 0
+
+      if (item.material_option_id) {
+        const material = materialsById.get(item.material_option_id)
+        if (!material || material.design_id !== item.design_id) {
+          throw createError(400, 'Сонгосон материал энэ загварт хамаарахгүй эсвэл идэвхгүй байна')
+        }
+        extraCost = parseFloat(material.extra_cost)
+      }
+
+      const unitPrice = parseFloat(design.base_price) + extraCost
+      return { ...item, design_name: design.name, unitPrice }
+    })
+
+    const subtotal = pricedItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0)
     const orderNumber = `ORD-${Date.now().toString().slice(-8)}`
 
     // ── Create the order ──────────────────────────────────────────────────────
@@ -101,17 +149,19 @@ const createOrder = async (req, res, next) => {
       `INSERT INTO orders (order_number, customer_id, tailor_id, status, subtotal, total_amount)
        VALUES ($1, $2, $3, 'submitted', $4, $4)
        RETURNING id, order_number, status, total_amount, created_at`,
-      [orderNumber, customer_id, tailor_id, unitPrice]
+      [orderNumber, customer_id, tailor_id, subtotal]
     )
     const order = orderResult.rows[0]
 
     // ── Create order item ─────────────────────────────────────────────────────
 
-    await client.query(
-      `INSERT INTO order_items (order_id, design_id, material_option_id, quantity, custom_note, unit_price)
-       VALUES ($1, $2, $3, 1, $4, $5)`,
-      [order.id, design_id, material_option_id || null, custom_note || null, unitPrice]
-    )
+    for (const item of pricedItems) {
+      await client.query(
+        `INSERT INTO order_items (order_id, design_id, material_option_id, quantity, custom_note, unit_price)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [order.id, item.design_id, item.material_option_id || null, item.quantity, item.custom_note || null, item.unitPrice]
+      )
+    }
 
     // ── Freeze measurements as a snapshot ─────────────────────────────────────
     // This is important: even if the customer later updates their measurement
@@ -144,7 +194,7 @@ const createOrder = async (req, res, next) => {
       userId: tailor_id,
       orderId: order.id,
       title: 'Шинэ захиалга',
-      content: `${order.order_number} дугаартай захиалга ирлээ.`,
+      content: `${order.order_number} дугаартай ${pricedItems.length} загвартай захиалга ирлээ.`,
     })
 
     await client.query('COMMIT')
@@ -152,7 +202,7 @@ const createOrder = async (req, res, next) => {
     res.status(201).json({
       success: true,
       message: 'Захиалга амжилттай үүсгэгдлээ',
-      order,
+      order: { ...order, item_count: pricedItems.length, design_name: getDesignListTitle(pricedItems) },
     })
   } catch (err) {
     await client.query('ROLLBACK')
@@ -169,12 +219,14 @@ const getMyOrders = async (req, res, next) => {
       `SELECT
          o.id, o.order_number, o.status, o.total_amount, o.created_at,
          u.full_name AS tailor_name,
-         gd.name    AS design_name
+         COUNT(oi.id)::int AS item_count,
+         STRING_AGG(gd.name, ', ' ORDER BY oi.id) AS design_name
        FROM orders o
        LEFT JOIN users u ON u.id = o.tailor_id
        LEFT JOIN order_items oi ON oi.order_id = o.id
        LEFT JOIN garment_designs gd ON gd.id = oi.design_id
        WHERE o.customer_id = $1
+       GROUP BY o.id, u.full_name
        ORDER BY o.created_at DESC`,
       [req.user.id]
     )
@@ -221,6 +273,24 @@ const getMyOrderById = async (req, res, next) => {
       return next(createError(404, 'Захиалга олдсонгүй'))
     }
 
+    const itemsResult = await pool.query(
+      `SELECT
+         oi.id, oi.quantity, oi.custom_note, oi.unit_price,
+         gd.id AS design_id,
+         gd.name AS design_name,
+         gd.image_url AS design_image_url,
+         gc.name AS design_category,
+         mo.material_name,
+         mo.color AS material_color
+       FROM order_items oi
+       JOIN garment_designs gd ON gd.id = oi.design_id
+       LEFT JOIN garment_categories gc ON gc.id = gd.category_id
+       LEFT JOIN material_options mo ON mo.id = oi.material_option_id
+       WHERE oi.order_id = $1
+       ORDER BY oi.id`,
+      [req.params.id]
+    )
+
     const measResult = await pool.query(
       `SELECT sm.metric_code, sm.metric_value
        FROM measurement_snapshots ms
@@ -258,6 +328,9 @@ const getMyOrderById = async (req, res, next) => {
       success: true,
       order: {
         ...orderResult.rows[0],
+        design_name: getDesignListTitle(itemsResult.rows),
+        item_count: itemsResult.rows.length,
+        items: itemsResult.rows,
         measurements,
         history: historyResult.rows,
         shipment: shipResult.rows[0] ?? null,

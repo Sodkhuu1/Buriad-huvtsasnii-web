@@ -102,6 +102,7 @@ export default function MyOrderDetail() {
 
   const measurements = order.measurements ?? {}
   const history      = order.history ?? []
+  const items        = order.items?.length ? order.items : [order]
 
   return (
     <div className="mod-wrap container">
@@ -198,33 +199,40 @@ export default function MyOrderDetail() {
 
           {/* Design */}
           <div className="mod-card">
-            <h3 className="mod-card-title">Захиалсан загвар</h3>
-            <div className="mod-design">
-              {order.design_image_url && (
-                <img
-                  src={order.design_image_url}
-                  alt={order.design_name}
-                  className="mod-design__img"
-                />
-              )}
-              <div className="mod-design__info">
-                <div className="mod-design__name">{order.design_name}</div>
-                {order.design_category && (
-                  <div className="mod-design__cat">{order.design_category}</div>
-                )}
-                {order.material_name && (
-                  <div className="mod-design__mat">
-                    Материал: {order.material_name}
-                    {order.material_color ? ` • ${order.material_color}` : ''}
+            <h3 className="mod-card-title">Захиалсан загварууд</h3>
+            <div className="mod-design-list">
+              {items.map(item => (
+                <div key={item.id ?? item.design_id ?? item.design_name} className="mod-design">
+                  {item.design_image_url && (
+                    <img
+                      src={item.design_image_url}
+                      alt={item.design_name}
+                      className="mod-design__img"
+                    />
+                  )}
+                  <div className="mod-design__info">
+                    <div className="mod-design__name">{item.design_name}</div>
+                    {item.design_category && (
+                      <div className="mod-design__cat">{item.design_category}</div>
+                    )}
+                    {item.material_name && (
+                      <div className="mod-design__mat">
+                        Материал: {item.material_name}
+                        {item.material_color ? ` • ${item.material_color}` : ''}
+                      </div>
+                    )}
+                    <div className="mod-design__mat">
+                      {Number(item.quantity || 1)} ш × {Number(item.unit_price || 0).toLocaleString()}₮
+                    </div>
+                    {item.custom_note && (
+                      <div className="mod-design__note">
+                        <span className="mod-design__note-key">Нэмэлт тэмдэглэл:</span>
+                        <span>{item.custom_note}</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                {order.custom_note && (
-                  <div className="mod-design__note">
-                    <span className="mod-design__note-key">Нэмэлт тэмдэглэл:</span>
-                    <span>{order.custom_note}</span>
-                  </div>
-                )}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
 

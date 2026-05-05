@@ -314,6 +314,25 @@
   cursor: pointer;
 }
 
+.design-card__cart {
+  margin-top: 10px;
+  padding: 11px 16px;
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid rgba(141, 35, 50, 0.18);
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-light));
+  color: var(--white);
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.design-card__cart--remove {
+  border-color: rgba(21, 37, 54, 0.12);
+  background: rgba(21, 37, 54, 0.05);
+  color: var(--navy);
+}
+
 .confirm-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -340,6 +359,26 @@
   gap: 14px;
   align-items: center;
   margin-top: 18px;
+}
+
+.confirm-card__items {
+  display: grid;
+  gap: 16px;
+}
+
+.confirm-card__items .confirm-card__design {
+  margin-top: 0;
+}
+
+.confirm-card__total {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(21, 37, 54, 0.08);
+  color: var(--navy);
+  font-weight: 800;
 }
 
 .confirm-card__img {
@@ -442,6 +481,59 @@
 
 .zahialga-nav__back {
   color: var(--navy);
+}
+
+.cart-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 170px;
+  padding: 12px 16px 12px 12px;
+  border-radius: 22px;
+  border: 1px solid rgba(141, 35, 50, 0.16);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(10px);
+}
+
+.cart-fab__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-light));
+  font-size: 1.2rem;
+}
+
+.cart-fab__body {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.cart-fab__label {
+  color: var(--text-light);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cart-fab__body strong {
+  color: var(--navy);
+  font-size: 0.94rem;
+}
+
+.cart-fab__body span:last-child {
+  color: var(--crimson);
+  font-size: 0.84rem;
+  font-weight: 800;
 }
 
 .zahialga-loading,
@@ -686,5 +778,17 @@
   .zahialga-nav .btn-secondary,
   .zahialga-success__actions > * {
     width: 100%;
+  }
+
+  .cart-fab {
+    right: 14px;
+    bottom: 14px;
+    min-width: 146px;
+    padding: 10px 12px 10px 10px;
+  }
+
+  .cart-fab__icon {
+    width: 36px;
+    height: 36px;
   }
 }

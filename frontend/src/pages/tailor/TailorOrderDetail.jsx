@@ -48,6 +48,7 @@ export default function TailorOrderDetail() {
 
   const actions = TAILOR_ACTIONS[order.status] ?? []
   const measurements = order.measurements ?? {}
+  const items = order.items?.length ? order.items : [order]
 
   return (
     <div>
@@ -80,20 +81,25 @@ export default function TailorOrderDetail() {
 
           {/* Design info */}
           <div className="td-card tod-design-card">
-            <h3 className="tod-card-title">Захиалсан загвар</h3>
-            <div className="tod-design">
-              {order.design_image_url && (
-                <img src={order.design_image_url} alt={order.design_name} className="tod-design__img" />
-              )}
-              <div className="tod-design__info">
-                <div className="tod-design__name">{order.design_name}</div>
-                <div className="tod-design__cat">{order.design_category}</div>
-                {order.total_amount > 0 && (
-                  <div className="tod-design__price">
-                    {Number(order.total_amount).toLocaleString()}₮
+            <h3 className="tod-card-title">Захиалсан загварууд</h3>
+            <div className="tod-design-list">
+              {items.map(item => (
+                <div key={item.id ?? item.design_id ?? item.design_name} className="tod-design">
+                  {item.design_image_url && (
+                    <img src={item.design_image_url} alt={item.design_name} className="tod-design__img" />
+                  )}
+                  <div className="tod-design__info">
+                    <div className="tod-design__name">{item.design_name}</div>
+                    <div className="tod-design__cat">{item.design_category}</div>
+                    <div className="tod-design__price">
+                      {Number(item.quantity || 1)} ш × {Number(item.unit_price || 0).toLocaleString()}₮
+                    </div>
+                    {item.custom_note && (
+                      <div className="tod-design__note">{item.custom_note}</div>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
 

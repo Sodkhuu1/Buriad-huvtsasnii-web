@@ -52,6 +52,11 @@
 }
 
 /* ── Design card ─────────────────────────────────────────── */
+.tod-design-list {
+  display: grid;
+  gap: 16px;
+}
+
 .tod-design {
   display: flex;
   gap: 14px;
@@ -83,6 +88,15 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--crimson);
+}
+
+.tod-design__note {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+  color: var(--text-mid);
+  font-size: 0.84rem;
 }
 
 /* ── Info rows ───────────────────────────────────────────── */

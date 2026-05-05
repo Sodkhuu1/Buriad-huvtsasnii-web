@@ -31,6 +31,7 @@ const MEASURE_LABELS = {
 }
 
 const formatPrice = (value) => `${Number(value || 0).toLocaleString()}₮`
+const cartTotal = (items) => items.reduce((sum, item) => sum + Number(item.base_price || 0), 0)
 
 function AuthModal({ onSuccess, onClose }) {
   const { login, register } = useAuth()
@@ -117,7 +118,7 @@ export default function Zahialga() {
   const { user } = useAuth()
 
   const [step, setStep] = useState(0)
-  const [selectedDesign, setSelectedDesign] = useState(null)
+  const [cartItems, setCartItems] = useState([])
   const [measurements, setMeasurements] = useState(EMPTY_MEASUREMENTS)
   const [customNote, setCustomNote] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -131,6 +132,9 @@ export default function Zahialga() {
   const [submitLoading, setSubmitLoading] = useState(false)
   const [apiError, setApiError] = useState('')
   const currentStep = STEPS[step]
+  const cartItemCount = cartItems.length
+  const selectedTailorId = cartItems[0]?.tailor_id
+  const orderTotal = cartTotal(cartItems)
 
   useEffect(() => {
     api.get('/garments')
@@ -139,9 +143,31 @@ export default function Zahialga() {
       .finally(() => setLoadingDesigns(false))
   }, [])
 
+  const addToCart = (design) => {
+    setApiError('')
+    setErrors({})
+
+    if (selectedTailorId && design.tailor_id !== selectedTailorId) {
+      setErrors({ design: 'Нэг захиалгад зөвхөн нэг оёдолчны загварууд сонгоно уу' })
+      return
+    }
+
+    setCartItems((current) => (
+      current.some(item => item.id === design.id)
+        ? current
+        : [...current, design]
+    ))
+  }
+
+  const removeFromCart = (designId) => {
+    setCartItems((current) => current.filter(item => item.id !== designId))
+  }
+
+  const isInCart = (designId) => cartItems.some(item => item.id === designId)
+
   const goNext = () => {
-    if (step === 0 && !selectedDesign) {
-      setErrors({ design: 'Эхлээд нэг загвар сонгоно уу' })
+    if (step === 0 && cartItems.length === 0) {
+      setErrors({ design: 'Эхлээд сагсандаа нэг эсвэл түүнээс дээш загвар нэмнэ үү' })
       return
     }
 
@@ -188,8 +214,11 @@ export default function Zahialga() {
 
     try {
       const data = await api.post('/orders', {
-        design_id: selectedDesign.id,
-        tailor_id: selectedDesign.tailor_id,
+        items: cartItems.map(item => ({
+          design_id: item.id,
+          quantity: 1,
+          custom_note: customNote || undefined,
+        })),
         measurements,
         custom_note: customNote || undefined,
       })
@@ -205,7 +234,7 @@ export default function Zahialga() {
 
   const reset = () => {
     setStep(0)
-    setSelectedDesign(null)
+    setCartItems([])
     setMeasurements(EMPTY_MEASUREMENTS)
     setCustomNote('')
     setSubmitted(false)
@@ -231,12 +260,12 @@ export default function Zahialga() {
             </div>
             <div className="zahialga-success__row">
               <span>Сонгосон загвар</span>
-              <strong>{selectedDesign.name}</strong>
+              <strong>{cartItems.map(item => item.name).join(', ')}</strong>
             </div>
-            {selectedDesign.tailor_name && (
+            {cartItems[0]?.tailor_name && (
               <div className="zahialga-success__row">
                 <span>Оёдолчин</span>
-                <strong>{selectedDesign.tailor_name}</strong>
+                <strong>{cartItems[0].tailor_name}</strong>
               </div>
             )}
             <div className="zahialga-success__row">
@@ -331,17 +360,19 @@ export default function Zahialga() {
               <div className="zahialga-empty">Одоогоор харагдах загвар алга байна.</div>
             ) : (
               <div className="design-grid">
-                {designs.map((design) => (
+                {designs.map((design) => {
+                  const inCart = isInCart(design.id)
+
+                  return (
                   <div
                     key={design.id}
                     role="button"
                     tabIndex={0}
-                    className={`design-card${selectedDesign?.id === design.id ? ' design-card--selected' : ''}`}
-                    onClick={() => { setSelectedDesign(design); setErrors({}) }}
+                    className={`design-card${inCart ? ' design-card--selected' : ''}`}
+                    onClick={() => addToCart(design)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
-                        setSelectedDesign(design)
-                        setErrors({})
+                        addToCart(design)
                       }
                     }}
                   >
@@ -352,7 +383,7 @@ export default function Zahialga() {
                         <div className="design-card__img design-card__img--placeholder">✦</div>
                       )}
 
-                      {selectedDesign?.id === design.id && <div className="design-card__check">✓</div>}
+                      {inCart && <div className="design-card__check">✓</div>}
                     </div>
 
                     <div className="design-card__body">
@@ -377,9 +408,25 @@ export default function Zahialga() {
                       >
                         Өмсөж үзэх
                       </button>
+
+                      <button
+                        type="button"
+                        className={`design-card__cart${inCart ? ' design-card__cart--remove' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (inCart) {
+                            removeFromCart(design.id)
+                          } else {
+                            addToCart(design)
+                          }
+                        }}
+                      >
+                        {inCart ? 'Сагснаас хасах' : 'Сагсанд нэмэх'}
+                      </button>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </section>
@@ -413,20 +460,28 @@ export default function Zahialga() {
 
             <div className="confirm-grid">
               <div className="confirm-card">
-                <h3 className="confirm-card__title">Сонгосон загвар</h3>
-                <div className="confirm-card__design">
-                  {selectedDesign.image_url ? (
-                    <img src={selectedDesign.image_url} alt={selectedDesign.name} className="confirm-card__img" />
-                  ) : (
-                    <div className="confirm-card__img confirm-card__img--placeholder">✦</div>
-                  )}
+                <h3 className="confirm-card__title">Сонгосон загварууд</h3>
+                <div className="confirm-card__items">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="confirm-card__design">
+                      {item.image_url ? (
+                        <img src={item.image_url} alt={item.name} className="confirm-card__img" />
+                      ) : (
+                        <div className="confirm-card__img confirm-card__img--placeholder">✦</div>
+                      )}
 
-                  <div>
-                    <p className="confirm-card__design-name">{selectedDesign.name}</p>
-                    {selectedDesign.category_name && <p className="confirm-card__design-cat">{selectedDesign.category_name}</p>}
-                    {selectedDesign.tailor_name && <p className="confirm-card__design-tailor">Оёдолчин: {selectedDesign.tailor_name}</p>}
-                    <p className="confirm-card__price">{formatPrice(selectedDesign.base_price)}</p>
-                  </div>
+                      <div>
+                        <p className="confirm-card__design-name">{item.name}</p>
+                        {item.category_name && <p className="confirm-card__design-cat">{item.category_name}</p>}
+                        {item.tailor_name && <p className="confirm-card__design-tailor">Оёдолчин: {item.tailor_name}</p>}
+                        <p className="confirm-card__price">{formatPrice(item.base_price)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="confirm-card__total">
+                  <span>Нийт</span>
+                  <strong>{formatPrice(orderTotal)}</strong>
                 </div>
               </div>
 
@@ -482,6 +537,15 @@ export default function Zahialga() {
           )}
         </div>
       </div>
+
+      <aside className="cart-fab" aria-label="Захиалгын сагс">
+        <div className="cart-fab__icon" aria-hidden="true">🛒</div>
+        <div className="cart-fab__body">
+          <span className="cart-fab__label">Сагс</span>
+          <strong>{cartItemCount} загвар</strong>
+          <span>{formatPrice(orderTotal)}</span>
+        </div>
+      </aside>
     </main>
   )
 }

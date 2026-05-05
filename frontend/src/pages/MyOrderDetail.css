@@ -320,6 +320,11 @@
 .mod-link:hover { text-decoration: underline; }
 
 /* Design */
+.mod-design-list {
+  display: grid;
+  gap: 16px;
+}
+
 .mod-design {
   display: flex;
   gap: 14px;

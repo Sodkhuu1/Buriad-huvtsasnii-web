@@ -22,6 +22,12 @@ const ALLOWED_TRANSITIONS = {
   shipped:       ['delivered'],
 }
 
+const getDesignListTitle = (items) => {
+  if (!items.length) return null
+  if (items.length === 1) return items[0].design_name
+  return `${items[0].design_name} + ${items.length - 1}`
+}
+
 // ─── GET /api/tailor/stats ───────────────────────────────────────────────────
 const getStats = async (req, res, next) => {
   try {
@@ -73,12 +79,14 @@ const getOrders = async (req, res, next) => {
          o.total_amount,
          o.created_at,
          u.full_name  AS customer_name,
-         gd.name      AS design_name
+         COUNT(oi.id)::int AS item_count,
+         STRING_AGG(gd.name, ', ' ORDER BY oi.id) AS design_name
        FROM orders o
        JOIN users u        ON u.id  = o.customer_id
        JOIN order_items oi ON oi.order_id = o.id
        JOIN garment_designs gd ON gd.id = oi.design_id
        WHERE ${conditions.join(' AND ')}
+       GROUP BY o.id, u.full_name
        ORDER BY o.created_at DESC
        ${limitClause}`,
       params
@@ -118,6 +126,21 @@ const getOrderById = async (req, res, next) => {
       return next(createError(404, 'Захиалга олдсонгүй'))
     }
 
+    const itemsResult = await pool.query(
+      `SELECT
+         oi.id, oi.quantity, oi.custom_note, oi.unit_price,
+         gd.id AS design_id,
+         gd.name AS design_name,
+         gd.image_url AS design_image_url,
+         gc.name AS design_category
+       FROM order_items oi
+       JOIN garment_designs gd ON gd.id = oi.design_id
+       LEFT JOIN garment_categories gc ON gc.id = gd.category_id
+       WHERE oi.order_id = $1 AND gd.tailor_id = $2
+       ORDER BY oi.id`,
+      [req.params.id, req.user.id]
+    )
+
     // Хэмжээс татах
     const measResult = await pool.query(
       `SELECT sm.metric_code, sm.metric_value
@@ -141,7 +164,14 @@ const getOrderById = async (req, res, next) => {
 
     res.json({
       success: true,
-      order: { ...orderResult.rows[0], measurements, shipment },
+      order: {
+        ...orderResult.rows[0],
+        design_name: getDesignListTitle(itemsResult.rows),
+        item_count: itemsResult.rows.length,
+        items: itemsResult.rows,
+        measurements,
+        shipment,
+      },
     })
   } catch (err) {
     next(err)
