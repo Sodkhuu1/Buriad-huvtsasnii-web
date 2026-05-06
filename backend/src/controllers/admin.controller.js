@@ -3,6 +3,7 @@
 const bcrypt = require('bcryptjs')
 const pool = require('../db')
 const { createError } = require('../middleware/errorHandler')
+const notify = require('../services/notifications')
 
 // ─── GET /api/admin/stats ──────────────────────────────────────────────────
 const getStats = async (req, res, next) => {
@@ -146,6 +147,7 @@ const getAllOrders = async (req, res, next) => {
       `SELECT
          o.id, o.order_number, o.status, o.total_amount, o.created_at,
          uc.full_name AS customer_name, uc.email AS customer_email,
+         ut.id AS tailor_id,
          ut.full_name AS tailor_name,
          (SELECT gd.name
           FROM order_items oi2
@@ -164,6 +166,93 @@ const getAllOrders = async (req, res, next) => {
     res.json({ success: true, orders: result.rows })
   } catch (err) {
     next(err)
+  }
+}
+
+const assignOrderToTailor = async (req, res, next) => {
+  const client = await pool.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const { id } = req.params
+    const { tailor_id } = req.body
+
+    if (!tailor_id) {
+      throw createError(400, 'Оёдолчин сонгоно уу')
+    }
+
+    const tailorResult = await client.query(
+      `SELECT u.id, u.full_name
+       FROM users u
+       LEFT JOIN tailor_profiles tp ON tp.user_id = u.id
+       WHERE u.id = $1
+         AND u.role = 'tailor'
+         AND u.status = 'active'
+         AND COALESCE(tp.verified, false) = true`,
+      [tailor_id]
+    )
+
+    if (!tailorResult.rows.length) {
+      throw createError(404, 'Идэвхтэй, баталгаажсан оёдолчин олдсонгүй')
+    }
+
+    const orderResult = await client.query(
+      `SELECT id, order_number, status, customer_id
+       FROM orders
+       WHERE id = $1
+       FOR UPDATE`,
+      [id]
+    )
+
+    if (!orderResult.rows.length) {
+      throw createError(404, 'Захиалга олдсонгүй')
+    }
+
+    const order = orderResult.rows[0]
+    const assignableStatuses = ['submitted', 'under_review', 'accepted']
+
+    if (!assignableStatuses.includes(order.status)) {
+      throw createError(400, 'Энэ төлөвтэй захиалгыг хуваарилах боломжгүй')
+    }
+
+    const updated = await client.query(
+      `UPDATE orders
+       SET tailor_id = $1,
+           status = 'accepted',
+           updated_at = NOW()
+       WHERE id = $2
+       RETURNING id, order_number, status, total_amount, created_at, tailor_id`,
+      [tailor_id, id]
+    )
+
+    await client.query(
+      `INSERT INTO order_status_history (order_id, from_status, to_status, changed_by_id, note)
+       VALUES ($1, $2, 'accepted', $3, $4)`,
+      [id, order.status, req.user.id, 'Админ захиалгыг баталж оёдолчинд хуваариллаа']
+    )
+
+    await notify.send(client, {
+      userId: tailor_id,
+      orderId: id,
+      title: 'Шинэ захиалга хуваарилагдлаа',
+      content: `${order.order_number} дугаартай захиалга танд хуваарилагдлаа.`,
+    })
+
+    await notify.send(client, {
+      userId: order.customer_id,
+      orderId: id,
+      title: 'Захиалга батлагдлаа',
+      content: `${order.order_number} дугаартай захиалга батлагдаж оёдолчинд хуваарилагдлаа.`,
+    })
+
+    await client.query('COMMIT')
+    res.json({ success: true, order: { ...updated.rows[0], tailor_name: tailorResult.rows[0].full_name } })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    next(err)
+  } finally {
+    client.release()
   }
 }
 
@@ -243,5 +332,5 @@ const verifyTailor = async (req, res, next) => {
 
 module.exports = {
   getStats, getUsers, getRecentUsers, updateUserStatus,
-  getAllOrders, getTailors, createTailor, verifyTailor,
+  getAllOrders, assignOrderToTailor, getTailors, createTailor, verifyTailor,
 }

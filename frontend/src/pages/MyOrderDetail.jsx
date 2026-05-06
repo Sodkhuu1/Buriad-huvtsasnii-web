@@ -170,7 +170,7 @@ export default function MyOrderDetail() {
           <div className="mod-modal" onClick={e => e.stopPropagation()}>
             <h3 className="mod-modal__title">Захиалгаа цуцлах уу?</h3>
             <p className="mod-modal__text">
-              Энэ үйлдлийг буцаах боломжгүй. Оёдолчин танай захиалгыг хүлээж авах
+              Энэ үйлдлийг буцаах боломжгүй. Админ танай захиалгыг батлах
               хүртэл л цуцлах боломжтой.
             </p>
             <div className="mod-modal__actions">
@@ -271,7 +271,9 @@ export default function MyOrderDetail() {
             </div>
           )}
 
-          <OrderChat orderId={order.id} title="Оёдолчинтой чатлах" />
+          {order.tailor_id && (
+            <OrderChat orderId={order.id} title="Оёдолчинтой чатлах" />
+          )}
 
           {/* Price */}
           <div className="mod-card">

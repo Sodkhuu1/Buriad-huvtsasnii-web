@@ -20,10 +20,6 @@ export const statusBadgeClass = (status) =>
 // Tuhain statusd oyodolchin hiij bolokh uildluud
 // Anhaar: ready -> shipped shilijill 'Iigeeh' modal-aar tusgairlan ajilladag tul end orjjuulahgui
 export const TAILOR_ACTIONS = {
-  submitted: [
-    { label: 'Батлах',    next: 'accepted', style: 'primary' },
-    { label: 'Татгалзах', next: 'rejected', style: 'danger'  },
-  ],
   deposit_paid: [
     { label: 'Үйлдвэрлэл эхлэх', next: 'in_production', style: 'primary' },
   ],

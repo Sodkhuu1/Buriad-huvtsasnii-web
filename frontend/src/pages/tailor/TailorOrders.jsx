@@ -6,7 +6,7 @@ import './TailorOrders.css'
 
 const FILTERS = [
   { key: 'all',          label: 'Бүгд' },
-  { key: 'submitted',    label: 'Шинэ' },
+  { key: 'accepted',     label: 'Шинэ' },
   { key: 'in_production',label: 'Үйлдвэрлэлд' },
   { key: 'ready',        label: 'Бэлэн' },
   { key: 'completed',    label: 'Дууссан' },

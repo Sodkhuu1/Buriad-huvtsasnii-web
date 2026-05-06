@@ -133,7 +133,6 @@ export default function Zahialga() {
   const [apiError, setApiError] = useState('')
   const currentStep = STEPS[step]
   const cartItemCount = cartItems.length
-  const selectedTailorId = cartItems[0]?.tailor_id
   const orderTotal = cartTotal(cartItems)
 
   useEffect(() => {
@@ -146,11 +145,6 @@ export default function Zahialga() {
   const addToCart = (design) => {
     setApiError('')
     setErrors({})
-
-    if (selectedTailorId && design.tailor_id !== selectedTailorId) {
-      setErrors({ design: 'Нэг захиалгад зөвхөн нэг оёдолчны загварууд сонгоно уу' })
-      return
-    }
 
     setCartItems((current) => (
       current.some(item => item.id === design.id)
@@ -249,8 +243,8 @@ export default function Zahialga() {
           <div className="zahialga-success__icon">✓</div>
           <h2 className="zahialga-success__title">Захиалга амжилттай илгээгдлээ</h2>
           <p className="zahialga-success__text">
-            Дэнзийн систем таны захиалгыг бүртгэлээ. Оёдолчин тань дэлгэрэнгүй мэдээллийг шалгаад
-            удахгүй холбогдох болно.
+            Дэнзийн систем таны захиалгыг бүртгэлээ. Админ захиалгыг шалгаж батлаад
+            тохирох оёдолчинд хуваарилах болно.
           </p>
 
           <div className="zahialga-success__details">
@@ -262,12 +256,6 @@ export default function Zahialga() {
               <span>Сонгосон загвар</span>
               <strong>{cartItems.map(item => item.name).join(', ')}</strong>
             </div>
-            {cartItems[0]?.tailor_name && (
-              <div className="zahialga-success__row">
-                <span>Оёдолчин</span>
-                <strong>{cartItems[0].tailor_name}</strong>
-              </div>
-            )}
             <div className="zahialga-success__row">
               <span>Дүн</span>
               <strong>{formatPrice(submittedOrder.total_amount)}</strong>
@@ -395,7 +383,6 @@ export default function Zahialga() {
                       )}
                       <h3 className="design-card__name">{design.name}</h3>
                       {design.ceremonial_use && <p className="design-card__desc">{design.ceremonial_use}</p>}
-                      {design.tailor_name && <p className="design-card__tailor">Оёдолчин: {design.tailor_name}</p>}
                       <span className="design-card__price">{formatPrice(design.base_price)}-с эхлэн</span>
 
                       <button
@@ -473,7 +460,6 @@ export default function Zahialga() {
                       <div>
                         <p className="confirm-card__design-name">{item.name}</p>
                         {item.category_name && <p className="confirm-card__design-cat">{item.category_name}</p>}
-                        {item.tailor_name && <p className="confirm-card__design-tailor">Оёдолчин: {item.tailor_name}</p>}
                         <p className="confirm-card__price">{formatPrice(item.base_price)}</p>
                       </div>
                     </div>
@@ -511,7 +497,7 @@ export default function Zahialga() {
 
             <div className="confirm-note">
               {user ? (
-                <p>Та захиалга илгээсний дараа оёдолчин захиалгын дэлгэрэнгүйг шалгаж, нарийвчилсан хугацаа болон үнээр холбогдоно.</p>
+                <p>Та захиалга илгээсний дараа админ захиалгыг шалгаж батлаад тохирох оёдолчинд хуваарилна.</p>
               ) : (
                 <p>Захиалга илгээхийн тулд нэвтрэх шаардлагатай. Илгээх товч дарахад нэвтрэх цонх нээгдэнэ.</p>
               )}

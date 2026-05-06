@@ -9,9 +9,12 @@ const STATUS_OPTIONS = [
 
 export default function AdminOrders() {
   const [orders, setOrders]       = useState([])
+  const [tailors, setTailors]     = useState([])
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState('')
   const [statusFilter, setStatus] = useState('')
+  const [selectedTailors, setSelectedTailors] = useState({})
+  const [assigningId, setAssigningId] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -23,6 +26,31 @@ export default function AdminOrders() {
   }, [statusFilter])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    api.get('/admin/tailors')
+      .then(d => setTailors((d.tailors ?? []).filter(t => t.status === 'active' && t.verified)))
+      .catch(err => setError(err.message))
+  }, [])
+
+  const canAssign = (status) => ['submitted', 'under_review', 'accepted'].includes(status)
+
+  const assignTailor = async (orderId) => {
+    const tailorId = selectedTailors[orderId]
+    if (!tailorId) return
+
+    setAssigningId(orderId)
+    setError('')
+
+    try {
+      await api.put(`/admin/orders/${orderId}/assign`, { tailor_id: tailorId })
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setAssigningId('')
+    }
+  }
 
   return (
     <div>
@@ -73,24 +101,58 @@ export default function AdminOrders() {
                 <th>Дүн</th>
                 <th>Огноо</th>
                 <th>Төлөв</th>
+                <th>Хуваарилалт</th>
               </tr>
             </thead>
             <tbody>
-              {orders.map(o => (
-                <tr key={o.id}>
-                  <td className="ad-table__mono">#{o.order_number}</td>
-                  <td style={{ fontWeight: 500 }}>{o.customer_name}</td>
-                  <td className="ad-table__muted">{o.tailor_name ?? '—'}</td>
-                  <td className="ad-table__muted">{o.design_name ?? '—'}</td>
-                  <td>{fmtMoney(o.total_amount)}</td>
-                  <td className="ad-table__muted">{fmtDate(o.created_at)}</td>
-                  <td>
-                    <span className={`ad-badge ${orderStatusBadgeClass(o.status)}`}>
-                      {ORDER_STATUS_LABEL[o.status] ?? o.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {orders.map(o => {
+                const selectedTailor = selectedTailors[o.id] ?? o.tailor_id ?? ''
+                const isAssignable = canAssign(o.status)
+
+                return (
+                  <tr key={o.id}>
+                    <td className="ad-table__mono">#{o.order_number}</td>
+                    <td style={{ fontWeight: 500 }}>{o.customer_name}</td>
+                    <td className="ad-table__muted">{o.tailor_name ?? '—'}</td>
+                    <td className="ad-table__muted">{o.design_name ?? '—'}</td>
+                    <td>{fmtMoney(o.total_amount)}</td>
+                    <td className="ad-table__muted">{fmtDate(o.created_at)}</td>
+                    <td>
+                      <span className={`ad-badge ${orderStatusBadgeClass(o.status)}`}>
+                        {ORDER_STATUS_LABEL[o.status] ?? o.status}
+                      </span>
+                    </td>
+                    <td>
+                      {isAssignable ? (
+                        <div className="ad-assign">
+                          <select
+                            className="ad-filter-select ad-assign__select"
+                            value={selectedTailor}
+                            onChange={e => setSelectedTailors(prev => ({ ...prev, [o.id]: e.target.value }))}
+                          >
+                            <option value="">Оёдолчин сонгох</option>
+                            {tailors.map(t => (
+                              <option key={t.id} value={t.id}>
+                                {t.business_name || t.full_name}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            className="ad-btn ad-btn--success"
+                            disabled={!selectedTailor || assigningId === o.id}
+                            onClick={() => assignTailor(o.id)}
+                          >
+                            {assigningId === o.id ? 'Хуваарилж байна...' : 'Батлах'}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="ad-table__muted">—</span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         )}

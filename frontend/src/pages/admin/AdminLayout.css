@@ -401,6 +401,18 @@
 
 .ad-filter-select:focus { border-color: var(--crimson); }
 
+.ad-assign {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 260px;
+}
+
+.ad-assign__select {
+  min-width: 150px;
+  max-width: 190px;
+}
+
 /* ── Loading / empty / error ─────────────────────────────── */
 .ad-loading {
   text-align: center;

@@ -102,16 +102,6 @@ const createOrder = async (req, res, next) => {
       throw createError(404, 'Garment design not found')
     }
     const designsById = new Map(designResult.rows.map(row => [row.id, row]))
-    const tailorIds = [...new Set(designResult.rows.map(row => row.tailor_id).filter(Boolean))]
-
-    if (!tailorIds.length || designResult.rows.some(row => !row.tailor_id)) {
-      throw createError(400, 'Энэ загварт оёдолчин тохируулагдаагүй байна')
-    }
-
-    if (tailorIds.length > 1) {
-      throw createError(400, 'Нэг захиалгад зөвхөн нэг оёдолчны загварууд сонгоно уу')
-    }
-    const tailor_id = tailorIds[0]
 
     // ── Calculate price ───────────────────────────────────────────────────────
 
@@ -146,10 +136,10 @@ const createOrder = async (req, res, next) => {
     // ── Create the order ──────────────────────────────────────────────────────
 
     const orderResult = await client.query(
-      `INSERT INTO orders (order_number, customer_id, tailor_id, status, subtotal, total_amount)
-       VALUES ($1, $2, $3, 'submitted', $4, $4)
+      `INSERT INTO orders (order_number, customer_id, status, subtotal, total_amount)
+       VALUES ($1, $2, 'submitted', $3, $3)
        RETURNING id, order_number, status, total_amount, created_at`,
-      [orderNumber, customer_id, tailor_id, subtotal]
+      [orderNumber, customer_id, subtotal]
     )
     const order = orderResult.rows[0]
 
@@ -188,14 +178,6 @@ const createOrder = async (req, res, next) => {
        VALUES ($1, 'submitted', $2, 'Захиалга үүсгэгдлээ')`,
       [order.id, customer_id]
     )
-
-    // Oyodolchin shine zahialga avlaa gej medeglel
-    await notify.send(client, {
-      userId: tailor_id,
-      orderId: order.id,
-      title: 'Шинэ захиалга',
-      content: `${order.order_number} дугаартай ${pricedItems.length} загвартай захиалга ирлээ.`,
-    })
 
     await client.query('COMMIT')
 

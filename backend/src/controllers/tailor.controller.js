@@ -16,7 +16,6 @@ const STATUS_NOTIFY_TEXT = {
 // Zovshoorogdson status shilijill (DB lowercase ENUM-tai taarna)
 // Anhaar: ready -> shipped statusiig 'shipOrder' endpoint-d shipment data-tai hamtad nih ajilluulna
 const ALLOWED_TRANSITIONS = {
-  submitted:     ['accepted', 'rejected'],
   deposit_paid:  ['in_production'],
   in_production: ['ready'],
   shipped:       ['delivered'],
@@ -33,7 +32,7 @@ const getStats = async (req, res, next) => {
   try {
     const result = await pool.query(
       `SELECT
-         COUNT(*) FILTER (WHERE status = 'submitted')                                                           AS new_orders,
+         COUNT(*) FILTER (WHERE status = 'accepted')                                                            AS new_orders,
          COUNT(*) FILTER (WHERE status = 'in_production')                                                       AS in_production,
          COUNT(*) FILTER (WHERE status = 'ready')                                                               AS ready,
          COUNT(*) FILTER (WHERE status = 'completed'
@@ -57,12 +56,12 @@ const getStats = async (req, res, next) => {
 }
 
 // ─── GET /api/tailor/orders ──────────────────────────────────────────────────
-// Query params: ?status=submitted  &limit=5
+// Query params: ?status=accepted  &limit=5
 const getOrders = async (req, res, next) => {
   try {
     const { status, limit } = req.query
     const params = [req.user.id]
-    const conditions = ['(o.tailor_id = $1 OR gd.tailor_id = $1)']
+    const conditions = ['o.tailor_id = $1', "o.status <> 'submitted'"]
 
     if (status) {
       params.push(status)
@@ -118,7 +117,7 @@ const getOrderById = async (req, res, next) => {
        JOIN order_items oi    ON oi.order_id = o.id
        JOIN garment_designs gd ON gd.id = oi.design_id
        LEFT JOIN garment_categories gc ON gc.id = gd.category_id
-       WHERE o.id = $1 AND (o.tailor_id = $2 OR gd.tailor_id = $2)`,
+       WHERE o.id = $1 AND o.tailor_id = $2 AND o.status <> 'submitted'`,
       [req.params.id, req.user.id]
     )
 
@@ -136,9 +135,9 @@ const getOrderById = async (req, res, next) => {
        FROM order_items oi
        JOIN garment_designs gd ON gd.id = oi.design_id
        LEFT JOIN garment_categories gc ON gc.id = gd.category_id
-       WHERE oi.order_id = $1 AND gd.tailor_id = $2
+       WHERE oi.order_id = $1
        ORDER BY oi.id`,
-      [req.params.id, req.user.id]
+      [req.params.id]
     )
 
     // Хэмжээс татах
@@ -203,7 +202,7 @@ const shipOrder = async (req, res, next) => {
        FROM orders o
        JOIN order_items oi ON oi.order_id = o.id
        JOIN garment_designs gd ON gd.id = oi.design_id
-       WHERE o.id = $1 AND (o.tailor_id = $2 OR gd.tailor_id = $2)`,
+       WHERE o.id = $1 AND o.tailor_id = $2`,
       [req.params.id, req.user.id]
     )
     if (!orderRes.rows.length) throw createError(404, 'Захиалга олдсонгүй')
@@ -294,7 +293,7 @@ const updateOrderStatus = async (req, res, next) => {
        FROM orders o
        JOIN order_items oi ON oi.order_id = o.id
        JOIN garment_designs gd ON gd.id = oi.design_id
-       WHERE o.id = $1 AND (o.tailor_id = $2 OR gd.tailor_id = $2)`,
+       WHERE o.id = $1 AND o.tailor_id = $2`,
       [req.params.id, req.user.id]
     )
 
