@@ -3,16 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import './auth.css'
 
-const roleOptions = [
-  { value: 'customer', label: 'Захиалагч' },
-  { value: 'tailor', label: 'Оёдолчин' },
-]
-
 export default function Signup() {
   const { register } = useAuth()
   const navigate = useNavigate()
 
-  const [role, setRole] = useState('customer')
   const [form, setForm] = useState({ full_name: '', email: '', phone: '', password: '', confirm: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -31,19 +25,15 @@ export default function Signup() {
     setError('')
 
     try {
-      const user = await register({
+      await register({
         full_name: form.full_name,
         email: form.email,
         phone: form.phone,
         password: form.password,
-        role,
+        role: 'customer',
       })
 
-      if (user.role === 'tailor') {
-        navigate('/tailor', { replace: true })
-      } else {
-        navigate('/', { replace: true })
-      }
+      navigate('/', { replace: true })
     } catch (err) {
       setError(err.message || 'Бүртгүүлэх үед алдаа гарлаа')
     } finally {
@@ -58,21 +48,21 @@ export default function Signup() {
         <span className="auth-brand__pill">Дэнз</span>
         <h1 className="auth-brand__title">Өөрийн дүр, хэмжээнд тохирсон захиалгаа нэг системээс эхлүүл.</h1>
         <p className="auth-brand__desc">
-          Хэрэглэгч, оёдолчин хоёрын аль алинд нь илүү ойлгомжтой, илүү брэндлэг анхны сэтгэгдэл өгөх бүртгэлийн дэлгэц.
+          Биеийн хэмжээсээ хадгалж, оёдолчидтой шууд холбогдон үндэсний хувцасны захиалгаа хялбар удирдах боломж.
         </p>
 
         <div className="auth-brand__list">
           <div className="auth-brand__item">
             <span>01</span>
-            <p>Ролийн сонголттой бүртгэл</p>
+            <p>Хувийн хэмжээсээ хадгалах</p>
           </div>
           <div className="auth-brand__item">
             <span>02</span>
-            <p>Бүтэн мэдээлэлтэй профайл эхлүүлэх</p>
+            <p>Оёдолчидтой шууд чатлах</p>
           </div>
           <div className="auth-brand__item">
             <span>03</span>
-            <p>Захиалга эсвэл оёдлын самбар руу шууд орох</p>
+            <p>Захиалгын явцаа хянах</p>
           </div>
         </div>
       </aside>
@@ -81,20 +71,7 @@ export default function Signup() {
         <div className="auth-card">
           <p className="auth-card__eyebrow">Create account</p>
           <h2 className="auth-card__heading">Бүртгүүлэх</h2>
-          <p className="auth-card__intro">Өөрт тохирох төрлөө сонгоод Дэнзийн системд нэгдээрэй.</p>
-
-          <div className="auth-role-tabs">
-            {roleOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`auth-role-tab${role === option.value ? ' active' : ''}`}
-                onClick={() => setRole(option.value)}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          <p className="auth-card__intro">Дэнзийн системд нэгдэж, үндэсний хувцасны соёлыг мэдрээрэй.</p>
 
           <form onSubmit={submit}>
             <div className="auth-field">

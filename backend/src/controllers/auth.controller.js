@@ -69,16 +69,15 @@ const profileSelect = `
 // POST /api/auth/register
 const register = async (req, res, next) => {
   try {
-    const { full_name, email, phone, password, role } = req.body;
+    const { full_name, email, phone, password } = req.body;
 
     // Basic validation
     if (!full_name || !email || !password) {
       return next(createError(400, 'Full name, email and password are required'));
     }
 
-    // Only allow these roles for self-registration
-    const allowedRoles = ['customer', 'tailor'];
-    const userRole = allowedRoles.includes(role) ? role : 'customer';
+    // Only allow customer role for self-registration
+    const userRole = 'customer';
 
     // Check if email is already taken
     const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
@@ -87,7 +86,6 @@ const register = async (req, res, next) => {
     }
 
     // Hash the password (never store plain text passwords!)
-    // bcrypt adds a "salt" and hashes the password — 10 = work factor (higher = slower but safer)
     const passwordHash = await bcrypt.hash(password, 10);
 
     // Insert the new user into the database
@@ -101,21 +99,10 @@ const register = async (req, res, next) => {
     const newUser = result.rows[0];
 
     // If registering as customer, create a customer profile row
-    if (userRole === 'customer') {
-      await pool.query(
-        'INSERT INTO customer_profiles (user_id) VALUES ($1)',
-        [newUser.id]
-      );
-    }
-
-    // If registering as tailor, create a tailor profile row
-    if (userRole === 'tailor') {
-      const { business_name, specialization } = req.body;
-      await pool.query(
-        'INSERT INTO tailor_profiles (user_id, business_name, specialization) VALUES ($1, $2, $3)',
-        [newUser.id, business_name || null, specialization || null]
-      );
-    }
+    await pool.query(
+      'INSERT INTO customer_profiles (user_id) VALUES ($1)',
+      [newUser.id]
+    );
 
     const token = generateToken(newUser);
     setAuthCookie(res, token);
