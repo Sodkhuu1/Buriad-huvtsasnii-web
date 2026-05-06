@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { api } from '../api'
-import PaymentModal from '../components/PaymentModal'
 import OrderChat from '../components/OrderChat'
 import {
   STATUS_LABEL, statusBadgeClass, MEASUREMENT_LABEL, SHIPMENT_MODE_LABEL,
@@ -18,8 +17,6 @@ export default function MyOrderDetail() {
   const [error, setError] = useState('')
   const [confirmCancel, setConfirmCancel] = useState(false)
   const [cancelling, setCancelling] = useState(false)
-  const [showPayment, setShowPayment] = useState(false)
-  const [confirming, setConfirming] = useState(false)
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [reviewComment, setReviewComment] = useState('')
@@ -54,21 +51,6 @@ export default function MyOrderDetail() {
       setError(err.message)
     } finally {
       setSubmittingReview(false)
-    }
-  }
-
-  // Zahialgaa hulen avsanaa batalgaajuulah — delivered toolovt baigaa uyed
-  const handleConfirmDelivery = async () => {
-    setConfirming(true)
-    setError('')
-    try {
-      await api.patch(`/orders/my/${id}/confirm-delivery`)
-      const data = await api.get(`/orders/my/${id}`)
-      setOrder(data.order)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setConfirming(false)
     }
   }
 
@@ -129,39 +111,8 @@ export default function MyOrderDetail() {
               Захиалга цуцлах
             </button>
           )}
-          {order.status === 'accepted' && (
-            <button
-              className="mod-pay-btn"
-              onClick={() => setShowPayment(true)}
-            >
-              Төлбөр хийх
-            </button>
-          )}
-          {order.status === 'delivered' && (
-            <button
-              className="mod-pay-btn"
-              onClick={handleConfirmDelivery}
-              disabled={confirming}
-            >
-              {confirming ? 'Баталж байна...' : 'Хүлээн авлаа'}
-            </button>
-          )}
         </div>
       </div>
-
-      {showPayment && (
-        <PaymentModal
-          orderId={order.id}
-          amount={order.total_amount}
-          onClose={() => setShowPayment(false)}
-          onSuccess={async () => {
-            setShowPayment(false)
-            // Шинэ төлөвтэйгөөр захиалгыг дахин татна
-            const data = await api.get(`/orders/my/${id}`)
-            setOrder(data.order)
-          }}
-        />
-      )}
 
       {error && <div className="mod-error">{error}</div>}
 
@@ -362,8 +313,8 @@ export default function MyOrderDetail() {
             </div>
           )}
 
-          {/* Uneglee — completed zahialgand */}
-          {order.status === 'completed' && (
+          {/* Uneglee — huleelgej ogson zahialgand */}
+          {['delivered', 'completed'].includes(order.status) && (
             <div className="mod-card">
               <h3 className="mod-card-title">Үнэлгээ</h3>
               {order.review ? (

@@ -6,18 +6,16 @@ const notify = require('../services/notifications')
 
 // Status -> medeglelin gar utga (zahialagchid harah)
 const STATUS_NOTIFY_TEXT = {
-  accepted:      { title: 'Захиалга батлагдлаа',     content: 'Оёдолчин таны захиалгыг хүлээн авлаа. Та урьдчилгаа төлбөрөө хийж эхэлж болно.' },
-  rejected:      { title: 'Захиалга татгалзагдлаа',  content: 'Уучлаарай, оёдолчин таны захиалгыг хүлээж аваагүй.' },
-  in_production: { title: 'Үйлдвэрлэлд орлоо',       content: 'Таны хувцасны үйлдвэрлэл эхэллээ.' },
-  ready:         { title: 'Захиалга бэлэн',          content: 'Таны хувцас бэлэн боллоо. Удахгүй хүргэлтэд гарна.' },
-  delivered:     { title: 'Хүргэгдлээ',              content: 'Таны захиалга хүргэгдсэн гэж тэмдэглэгдлээ. Хүлээн авсан бол баталгаажуулна уу.' },
+  in_production: { title: 'Захиалга хийгдэж эхэллээ', content: 'Таны захиалгын үйлдвэрлэл эхэллээ.' },
+  delivered:     { title: 'Захиалга хүлээлгэж өглөө', content: 'Таны захиалга хүлээлгэж өгсөн төлөвт орлоо.' },
 }
 
 // Zovshoorogdson status shilijill (DB lowercase ENUM-tai taarna)
-// Anhaar: ready -> shipped statusiig 'shipOrder' endpoint-d shipment data-tai hamtad nih ajilluulna
 const ALLOWED_TRANSITIONS = {
+  accepted:      ['in_production'],
   deposit_paid:  ['in_production'],
-  in_production: ['ready'],
+  in_production: ['delivered'],
+  ready:         ['delivered'],
   shipped:       ['delivered'],
 }
 
@@ -34,9 +32,9 @@ const getStats = async (req, res, next) => {
       `SELECT
          COUNT(*) FILTER (WHERE status = 'accepted')                                                            AS new_orders,
          COUNT(*) FILTER (WHERE status = 'in_production')                                                       AS in_production,
-         COUNT(*) FILTER (WHERE status = 'ready')                                                               AS ready,
-         COUNT(*) FILTER (WHERE status = 'completed'
-                            AND DATE_TRUNC('month', updated_at) = DATE_TRUNC('month', NOW()))                  AS completed_this_month
+         COUNT(*) FILTER (WHERE status IN ('delivered','completed'))                                            AS delivered_orders,
+         COUNT(*) FILTER (WHERE status IN ('delivered','completed')
+                            AND DATE_TRUNC('month', updated_at) = DATE_TRUNC('month', NOW()))                  AS delivered_this_month
        FROM orders
        WHERE tailor_id = $1`,
       [req.user.id]
@@ -47,8 +45,8 @@ const getStats = async (req, res, next) => {
       success: true,
       new_orders:           parseInt(row.new_orders),
       in_production:        parseInt(row.in_production),
-      ready:                parseInt(row.ready),
-      completed_this_month: parseInt(row.completed_this_month),
+      delivered_orders:     parseInt(row.delivered_orders),
+      delivered_this_month: parseInt(row.delivered_this_month),
     })
   } catch (err) {
     next(err)
@@ -64,8 +62,14 @@ const getOrders = async (req, res, next) => {
     const conditions = ['o.tailor_id = $1', "o.status <> 'submitted'"]
 
     if (status) {
-      params.push(status)
-      conditions.push(`o.status = $${params.length}`)
+      if (status === 'accepted') {
+        conditions.push("o.status IN ('accepted','deposit_paid')")
+      } else if (status === 'delivered') {
+        conditions.push("o.status IN ('ready','shipped','delivered','completed')")
+      } else {
+        params.push(status)
+        conditions.push(`o.status = $${params.length}`)
+      }
     }
 
     const limitClause = limit ? `LIMIT ${parseInt(limit)}` : ''

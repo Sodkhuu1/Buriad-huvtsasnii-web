@@ -36,22 +36,22 @@ export default function TailorDashboard() {
       <div className="td-stats">
         <div className="td-stat-card td-stat-card--new">
           <div className="td-stat-card__value">{stats?.new_orders ?? 0}</div>
-          <div className="td-stat-card__label">Шинэ захиалга</div>
+          <div className="td-stat-card__label">Баталсан захиалга</div>
           <div className="td-stat-card__icon">✉</div>
         </div>
         <div className="td-stat-card td-stat-card--production">
           <div className="td-stat-card__value">{stats?.in_production ?? 0}</div>
-          <div className="td-stat-card__label">Үйлдвэрлэлд</div>
+          <div className="td-stat-card__label">Хийгдэж эхэлсэн</div>
           <div className="td-stat-card__icon">✂</div>
         </div>
         <div className="td-stat-card td-stat-card--ready">
-          <div className="td-stat-card__value">{stats?.ready ?? 0}</div>
-          <div className="td-stat-card__label">Бэлэн</div>
+          <div className="td-stat-card__value">{stats?.delivered_orders ?? 0}</div>
+          <div className="td-stat-card__label">Хүлээлгэж өгсөн</div>
           <div className="td-stat-card__icon">✓</div>
         </div>
         <div className="td-stat-card td-stat-card--completed">
-          <div className="td-stat-card__value">{stats?.completed_this_month ?? 0}</div>
-          <div className="td-stat-card__label">Энэ сард дууссан</div>
+          <div className="td-stat-card__value">{stats?.delivered_this_month ?? 0}</div>
+          <div className="td-stat-card__label">Энэ сард хүлээлгэсэн</div>
           <div className="td-stat-card__icon">★</div>
         </div>
       </div>

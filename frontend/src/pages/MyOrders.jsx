@@ -6,12 +6,11 @@ import './MyOrders.css'
 
 const FILTERS = [
   { key: 'all',           label: 'Бүгд' },
-  { key: 'submitted',     label: 'Шинэ' },
-  { key: 'in_production', label: 'Үйлдвэрлэлд' },
-  { key: 'ready',         label: 'Бэлэн' },
-  { key: 'delivered',     label: 'Хүргэгдсэн' },
-  { key: 'completed',     label: 'Дууссан' },
+  { key: 'submitted',     label: 'Илгээгдсэн' },
+  { key: 'accepted',      label: 'Баталсан' },
   { key: 'rejected',      label: 'Татгалзсан' },
+  { key: 'in_production', label: 'Хийгдэж эхэлсэн' },
+  { key: 'delivered',     label: 'Хүлээлгэж өгсөн' },
 ]
 
 export default function MyOrders() {
@@ -30,7 +29,12 @@ export default function MyOrders() {
 
   const visible = filter === 'all'
     ? orders
-    : orders.filter(o => o.status === filter)
+    : orders.filter(o => {
+        if (filter === 'submitted') return ['submitted', 'under_review', 'needs_clarification'].includes(o.status)
+        if (filter === 'accepted') return ['accepted', 'deposit_paid'].includes(o.status)
+        if (filter === 'delivered') return ['ready', 'shipped', 'delivered', 'completed'].includes(o.status)
+        return o.status === filter
+      })
 
   return (
     <div className="mo-wrap container">

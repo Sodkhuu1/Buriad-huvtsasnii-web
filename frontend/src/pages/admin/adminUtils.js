@@ -14,17 +14,17 @@ export const USER_STATUS_LABEL = {
 
 export const ORDER_STATUS_LABEL = {
   draft:               'Ноорог',
-  submitted:           'Шинэ',
-  under_review:        'Шалгаж байна',
-  needs_clarification: 'Тодруулга шаардлагатай',
-  accepted:            'Зөвшөөрсөн',
-  rejected:            'Татгалзсан',
-  deposit_paid:        'Урьдчилгаа төлсөн',
-  in_production:       'Үйлдвэрлэлд',
-  ready:               'Бэлэн',
-  shipped:             'Илгээгдсэн',
-  delivered:           'Хүргэгдсэн',
-  completed:           'Дууссан',
+  submitted:           'Захиалга илгээгдсэн',
+  under_review:        'Захиалга илгээгдсэн',
+  needs_clarification: 'Захиалга илгээгдсэн',
+  accepted:            'Захиалга баталсан',
+  rejected:            'Захиалга татгалзсан',
+  deposit_paid:        'Захиалга баталсан',
+  in_production:       'Хийгдэж эхэлсэн',
+  ready:               'Хүлээлгэж өгсөн',
+  shipped:             'Хүлээлгэж өгсөн',
+  delivered:           'Хүлээлгэж өгсөн',
+  completed:           'Хүлээлгэж өгсөн',
   cancelled:           'Цуцлагдсан',
 }
 

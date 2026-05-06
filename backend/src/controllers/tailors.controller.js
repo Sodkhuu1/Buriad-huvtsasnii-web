@@ -15,7 +15,7 @@ const getTailors = async (req, res, next) => {
         tp.max_lead_days,
         tp.introduction,
         tp.avatar_url,
-        (SELECT COUNT(*) FROM orders o WHERE o.tailor_id = u.id AND o.status = 'completed') AS completed_orders,
+        (SELECT COUNT(*) FROM orders o WHERE o.tailor_id = u.id AND o.status IN ('delivered','completed')) AS completed_orders,
         (SELECT COUNT(*) FROM garment_designs gd WHERE gd.tailor_id = u.id AND gd.active = true) AS design_count
       FROM users u
       JOIN tailor_profiles tp ON tp.user_id = u.id

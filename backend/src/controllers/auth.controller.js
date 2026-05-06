@@ -146,7 +146,7 @@ const login = async (req, res, next) => {
     );
 
     if (result.rows.length === 0) {
-      return next(createError(401, 'Invalid email or password'));
+      return next(createError(401, 'емайл эсвэл нууц үг буруу байна'));
     }
 
     const user = result.rows[0];
@@ -159,7 +159,7 @@ const login = async (req, res, next) => {
     // Compare the provided password with the stored hash
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      return next(createError(401, 'Invalid email or password'));
+      return next(createError(401, 'емайл эсвэл нууц үг буруу байна'));
     }
 
     const token = generateToken(user);

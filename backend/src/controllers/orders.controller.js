@@ -401,7 +401,7 @@ const confirmDelivery = async (req, res, next) => {
     if (!orderResult.rows.length) throw createError(404, 'Захиалга олдсонгүй')
 
     if (orderResult.rows[0].status !== 'delivered') {
-      throw createError(400, 'Зөвхөн "Хүргэгдсэн" төлөвт байгаа захиалгыг батлах боломжтой')
+      throw createError(400, 'Зөвхөн "Хүлээлгэж өгсөн" төлөвт байгаа захиалгыг батлах боломжтой')
     }
 
     const updated = await client.query(
@@ -442,7 +442,7 @@ const confirmDelivery = async (req, res, next) => {
 }
 
 // POST /api/orders/my/:id/review
-// Zovkhon completed zahialgand 1-5 od + setgegdsel ulgeenee, oyodolchni ratingiig dahin tootsno
+// Zovkhon huleelgej ogson zahialgand 1-5 od + setgegdsel uldeej bolno
 const createReview = async (req, res, next) => {
   const client = await pool.connect()
   try {
@@ -464,8 +464,8 @@ const createReview = async (req, res, next) => {
     if (!orderResult.rows.length) throw createError(404, 'Захиалга олдсонгүй')
 
     const order = orderResult.rows[0]
-    if (order.status !== 'completed') {
-      throw createError(400, 'Зөвхөн дууссан захиалгад үнэлгээ өгөх боломжтой')
+    if (!['delivered', 'completed'].includes(order.status)) {
+      throw createError(400, 'Зөвхөн хүлээлгэж өгсөн захиалгад үнэлгээ өгөх боломжтой')
     }
     if (!order.tailor_id) throw createError(400, 'Оёдолчинтой холбоогүй захиалга')
 

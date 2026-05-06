@@ -8,7 +8,7 @@ const notify = require('../services/notifications')
 // ─── GET /api/admin/stats ──────────────────────────────────────────────────
 const getStats = async (req, res, next) => {
   try {
-    const [usersRes, ordersRes] = await Promise.all([
+    const [usersRes, ordersRes, monthlyRevenueRes, statusBreakdownRes] = await Promise.all([
       pool.query(`
         SELECT
           COUNT(*)                                          AS total_users,
@@ -23,14 +23,40 @@ const getStats = async (req, res, next) => {
           COUNT(*)                                                              AS total_orders,
           COUNT(*) FILTER (WHERE status IN ('submitted','under_review'))        AS pending_orders,
           COUNT(*) FILTER (WHERE status = 'in_production')                      AS active_orders,
-          COUNT(*) FILTER (WHERE status = 'completed')                          AS completed_orders,
-          COALESCE(SUM(total_amount) FILTER (WHERE status = 'completed'), 0)   AS total_revenue
+          COUNT(*) FILTER (WHERE status IN ('delivered','completed'))           AS completed_orders,
+          COALESCE(SUM(total_amount) FILTER (WHERE status IN ('delivered','completed')), 0) AS total_revenue
+        FROM orders
+      `),
+      pool.query(`
+        WITH months AS (
+          SELECT generate_series(
+            date_trunc('month', NOW()) - INTERVAL '11 months',
+            date_trunc('month', NOW()),
+            INTERVAL '1 month'
+          ) AS month_start
+        )
+        SELECT
+          TO_CHAR(months.month_start, 'MM') AS month,
+          COALESCE(SUM(o.total_amount) FILTER (WHERE o.status IN ('delivered','completed')), 0) AS revenue
+        FROM months
+        LEFT JOIN orders o
+          ON date_trunc('month', o.created_at) = months.month_start
+        GROUP BY months.month_start
+        ORDER BY months.month_start
+      `),
+      pool.query(`
+        SELECT
+          COUNT(*) FILTER (WHERE status IN ('delivered','completed')) AS completed,
+          COUNT(*) FILTER (WHERE status IN ('accepted','deposit_paid','in_production','ready','shipped')) AS in_progress,
+          COUNT(*) FILTER (WHERE status IN ('submitted','under_review','needs_clarification')) AS pending,
+          COUNT(*) FILTER (WHERE status IN ('rejected','cancelled')) AS stopped
         FROM orders
       `),
     ])
 
     const u = usersRes.rows[0]
     const o = ordersRes.rows[0]
+    const b = statusBreakdownRes.rows[0]
 
     res.json({
       success: true,
@@ -43,6 +69,16 @@ const getStats = async (req, res, next) => {
       active_orders:     parseInt(o.active_orders),
       completed_orders:  parseInt(o.completed_orders),
       total_revenue:     parseFloat(o.total_revenue),
+      monthly_revenue:   monthlyRevenueRes.rows.map(row => ({
+        month: row.month,
+        revenue: parseFloat(row.revenue),
+      })),
+      order_status_breakdown: {
+        completed:   parseInt(b.completed),
+        in_progress: parseInt(b.in_progress),
+        pending:     parseInt(b.pending),
+        stopped:     parseInt(b.stopped),
+      },
     })
   } catch (err) {
     next(err)
@@ -256,6 +292,76 @@ const assignOrderToTailor = async (req, res, next) => {
   }
 }
 
+const rejectOrder = async (req, res, next) => {
+  const client = await pool.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const { id } = req.params
+    const { note } = req.body || {}
+
+    const orderResult = await client.query(
+      `SELECT id, order_number, status, customer_id, tailor_id
+       FROM orders
+       WHERE id = $1
+       FOR UPDATE`,
+      [id]
+    )
+
+    if (!orderResult.rows.length) {
+      throw createError(404, 'Захиалга олдсонгүй')
+    }
+
+    const order = orderResult.rows[0]
+    const rejectableStatuses = ['submitted', 'under_review', 'accepted']
+
+    if (!rejectableStatuses.includes(order.status)) {
+      throw createError(400, 'Энэ төлөвтэй захиалгыг татгалзах боломжгүй')
+    }
+
+    const updated = await client.query(
+      `UPDATE orders
+       SET status = 'rejected',
+           tailor_id = NULL,
+           updated_at = NOW()
+       WHERE id = $1
+       RETURNING id, order_number, status, total_amount, created_at`,
+      [id]
+    )
+
+    await client.query(
+      `INSERT INTO order_status_history (order_id, from_status, to_status, changed_by_id, note)
+       VALUES ($1, $2, 'rejected', $3, $4)`,
+      [id, order.status, req.user.id, note || 'Админ захиалгыг татгалзлаа']
+    )
+
+    await notify.send(client, {
+      userId: order.customer_id,
+      orderId: id,
+      title: 'Захиалга татгалзагдлаа',
+      content: `${order.order_number} дугаартай захиалга татгалзагдлаа.`,
+    })
+
+    if (order.tailor_id) {
+      await notify.send(client, {
+        userId: order.tailor_id,
+        orderId: id,
+        title: 'Захиалга татгалзагдлаа',
+        content: `${order.order_number} дугаартай захиалга админаар татгалзагдлаа.`,
+      })
+    }
+
+    await client.query('COMMIT')
+    res.json({ success: true, order: updated.rows[0] })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    next(err)
+  } finally {
+    client.release()
+  }
+}
+
 // ─── GET /api/admin/tailors ────────────────────────────────────────────────
 const getTailors = async (req, res, next) => {
   try {
@@ -332,5 +438,5 @@ const verifyTailor = async (req, res, next) => {
 
 module.exports = {
   getStats, getUsers, getRecentUsers, updateUserStatus,
-  getAllOrders, assignOrderToTailor, getTailors, createTailor, verifyTailor,
+  getAllOrders, assignOrderToTailor, rejectOrder, getTailors, createTailor, verifyTailor,
 }

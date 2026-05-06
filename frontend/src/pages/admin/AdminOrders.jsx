@@ -3,8 +3,7 @@ import { api } from '../../api'
 import { ORDER_STATUS_LABEL, orderStatusBadgeClass, fmtDate, fmtMoney } from './adminUtils'
 
 const STATUS_OPTIONS = [
-  'submitted', 'under_review', 'accepted', 'deposit_paid',
-  'in_production', 'ready', 'shipped', 'delivered', 'completed', 'rejected',
+  'submitted', 'accepted', 'rejected', 'in_production', 'delivered',
 ]
 
 export default function AdminOrders() {
@@ -15,6 +14,7 @@ export default function AdminOrders() {
   const [statusFilter, setStatus] = useState('')
   const [selectedTailors, setSelectedTailors] = useState({})
   const [assigningId, setAssigningId] = useState('')
+  const [rejectingId, setRejectingId] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -34,6 +34,7 @@ export default function AdminOrders() {
   }, [])
 
   const canAssign = (status) => ['submitted', 'under_review', 'accepted'].includes(status)
+  const canReject = (status) => ['submitted', 'under_review', 'accepted'].includes(status)
 
   const assignTailor = async (orderId) => {
     const tailorId = selectedTailors[orderId]
@@ -49,6 +50,20 @@ export default function AdminOrders() {
       setError(err.message)
     } finally {
       setAssigningId('')
+    }
+  }
+
+  const rejectOrder = async (orderId) => {
+    setRejectingId(orderId)
+    setError('')
+
+    try {
+      await api.put(`/admin/orders/${orderId}/reject`)
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setRejectingId('')
     }
   }
 
@@ -108,6 +123,7 @@ export default function AdminOrders() {
               {orders.map(o => {
                 const selectedTailor = selectedTailors[o.id] ?? o.tailor_id ?? ''
                 const isAssignable = canAssign(o.status)
+                const isRejectable = canReject(o.status)
 
                 return (
                   <tr key={o.id}>
@@ -123,28 +139,42 @@ export default function AdminOrders() {
                       </span>
                     </td>
                     <td>
-                      {isAssignable ? (
+                      {isAssignable || isRejectable ? (
                         <div className="ad-assign">
-                          <select
-                            className="ad-filter-select ad-assign__select"
-                            value={selectedTailor}
-                            onChange={e => setSelectedTailors(prev => ({ ...prev, [o.id]: e.target.value }))}
-                          >
-                            <option value="">Оёдолчин сонгох</option>
-                            {tailors.map(t => (
-                              <option key={t.id} value={t.id}>
-                                {t.business_name || t.full_name}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            type="button"
-                            className="ad-btn ad-btn--success"
-                            disabled={!selectedTailor || assigningId === o.id}
-                            onClick={() => assignTailor(o.id)}
-                          >
-                            {assigningId === o.id ? 'Хуваарилж байна...' : 'Батлах'}
-                          </button>
+                          {isAssignable && (
+                            <>
+                              <select
+                                className="ad-filter-select ad-assign__select"
+                                value={selectedTailor}
+                                onChange={e => setSelectedTailors(prev => ({ ...prev, [o.id]: e.target.value }))}
+                              >
+                                <option value="">Оёдолчин сонгох</option>
+                                {tailors.map(t => (
+                                  <option key={t.id} value={t.id}>
+                                    {t.business_name || t.full_name}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                type="button"
+                                className="ad-btn ad-btn--success"
+                                disabled={!selectedTailor || assigningId === o.id}
+                                onClick={() => assignTailor(o.id)}
+                              >
+                                {assigningId === o.id ? 'Хуваарилж байна...' : 'Батлах'}
+                              </button>
+                            </>
+                          )}
+                          {isRejectable && (
+                            <button
+                              type="button"
+                              className="ad-btn ad-btn--danger"
+                              disabled={rejectingId === o.id}
+                              onClick={() => rejectOrder(o.id)}
+                            >
+                              {rejectingId === o.id ? 'Татгалзаж байна...' : 'Татгалзах'}
+                            </button>
+                          )}
                         </div>
                       ) : (
                         <span className="ad-table__muted">—</span>

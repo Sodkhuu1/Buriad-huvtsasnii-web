@@ -11,20 +11,6 @@ const markPaymentPaid = async (client, pay, changedById = null, paidAt = new Dat
     [paidAt, pay.id]
   )
 
-  if (pay.order_status !== 'accepted') {
-    return pay.order_status
-  }
-
-  await client.query(
-    `UPDATE orders SET status = 'deposit_paid', updated_at = NOW() WHERE id = $1`,
-    [pay.order_id]
-  )
-  await client.query(
-    `INSERT INTO order_status_history (order_id, from_status, to_status, changed_by_id, note)
-     VALUES ($1, 'accepted', 'deposit_paid', $2, 'QPay-ээр төлбөр хийгдлээ')`,
-    [pay.order_id, changedById]
-  )
-
   const tRes = await client.query(
     `SELECT tailor_id, order_number FROM orders WHERE id = $1`,
     [pay.order_id]
@@ -33,12 +19,12 @@ const markPaymentPaid = async (client, pay, changedById = null, paidAt = new Dat
     await notify.send(client, {
       userId: tRes.rows[0].tailor_id,
       orderId: pay.order_id,
-      title: 'Урьдчилгаа төлбөр ирлээ',
-      content: `${tRes.rows[0].order_number} захиалга төлөгдсөн. Үйлдвэрлэлээ эхлүүлж болно.`,
+      title: 'Төлбөр ирлээ',
+      content: `${tRes.rows[0].order_number} захиалгын төлбөр төлөгдлөө.`,
     })
   }
 
-  return 'deposit_paid'
+  return pay.order_status
 }
 
 // POST /api/payments/orders/:id/invoice
@@ -123,7 +109,7 @@ const createInvoice = async (req, res, next) => {
 }
 
 // GET /api/payments/:paymentId/check
-// Frontend-ees 3 sek tutamd duudana, paid bolson bol order-iig deposit_paid bolgono
+// Frontend-ees 3 sek tutamd duudana, paid bolson esehiig shalgana
 const checkPayment = async (req, res, next) => {
   const client = await pool.connect()
   try {

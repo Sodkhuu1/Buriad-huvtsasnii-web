@@ -6,11 +6,9 @@ import './TailorOrders.css'
 
 const FILTERS = [
   { key: 'all',          label: 'Бүгд' },
-  { key: 'accepted',     label: 'Шинэ' },
-  { key: 'in_production',label: 'Үйлдвэрлэлд' },
-  { key: 'ready',        label: 'Бэлэн' },
-  { key: 'completed',    label: 'Дууссан' },
-  { key: 'rejected',     label: 'Татгалзсан' },
+  { key: 'accepted',     label: 'Баталсан' },
+  { key: 'in_production',label: 'Хийгдэж эхэлсэн' },
+  { key: 'delivered',    label: 'Хүлээлгэж өгсөн' },
 ]
 
 export default function TailorOrders() {

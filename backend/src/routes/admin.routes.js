@@ -2,7 +2,7 @@ const express = require('express')
 const router  = express.Router()
 const {
   getStats, getUsers, getRecentUsers, updateUserStatus,
-  getAllOrders, assignOrderToTailor, getTailors, createTailor, verifyTailor,
+  getAllOrders, assignOrderToTailor, rejectOrder, getTailors, createTailor, verifyTailor,
 } = require('../controllers/admin.controller')
 const { protect, requireRole } = require('../middleware/auth')
 
@@ -16,6 +16,7 @@ router.get('/recent-users',       getRecentUsers)
 router.put('/users/:id/status',   updateUserStatus)
 router.get('/orders',             getAllOrders)
 router.put('/orders/:id/assign',  assignOrderToTailor)
+router.put('/orders/:id/reject',  rejectOrder)
 router.get('/tailors',            getTailors)
 router.post('/tailors',           createTailor)
 router.put('/tailors/:id/verify', verifyTailor)
