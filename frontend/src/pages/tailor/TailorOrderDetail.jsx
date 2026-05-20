@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../../api'
 import OrderChat from '../../components/OrderChat'
-import { STATUS_LABEL, statusBadgeClass, TAILOR_ACTIONS, MEASUREMENT_LABEL } from './tailorUtils'
+import {
+  STATUS_LABEL, statusBadgeClass, TAILOR_ACTIONS, MEASUREMENT_LABEL,
+  SHIPMENT_MODE_LABEL, SHIPMENT_STATUS_LABEL, formatDateTime,
+} from './tailorUtils'
 import './TailorOrderDetail.css'
 
 export default function TailorOrderDetail() {
@@ -14,6 +17,15 @@ export default function TailorOrderDetail() {
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState('')
   const [note, setNote] = useState('')
+  const [shipOpen, setShipOpen] = useState(false)
+  const [shipLoading, setShipLoading] = useState(false)
+  const [shipError, setShipError] = useState('')
+  const [shipForm, setShipForm] = useState({
+    mode: 'courier',
+    carrier_name: '',
+    tracking_code: '',
+    note: '',
+  })
 
   useEffect(() => {
     setLoading(true)
@@ -24,6 +36,11 @@ export default function TailorOrderDetail() {
       .finally(() => setLoading(false))
   }, [id])
 
+  const reloadOrder = async () => {
+    const data = await api.get(`/tailor/orders/${id}`)
+    setOrder(data.order)
+  }
+
   const handleAction = async (nextStatus) => {
     setActionLoading(true)
     setError('')
@@ -32,13 +49,47 @@ export default function TailorOrderDetail() {
         status: nextStatus,
         note: note || undefined,
       })
-      const data = await api.get(`/tailor/orders/${id}`)
-      setOrder(data.order)
+      await reloadOrder()
       setNote('')
     } catch (err) {
       setError(err.message)
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  const handleShipChange = (field, value) => {
+    setShipForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  const resetShipForm = () => {
+    setShipForm({ mode: 'courier', carrier_name: '', tracking_code: '', note: '' })
+    setShipError('')
+  }
+
+  const handleShipSubmit = async (event) => {
+    event.preventDefault()
+    setShipLoading(true)
+    setShipError('')
+
+    try {
+      const body = shipForm.mode === 'pickup'
+        ? { mode: 'pickup', note: shipForm.note }
+        : {
+            mode: 'courier',
+            carrier_name: shipForm.carrier_name,
+            tracking_code: shipForm.tracking_code,
+            note: shipForm.note || undefined,
+          }
+
+      await api.post(`/tailor/orders/${id}/ship`, body)
+      await reloadOrder()
+      resetShipForm()
+      setShipOpen(false)
+    } catch (err) {
+      setShipError(err.message)
+    } finally {
+      setShipLoading(false)
     }
   }
 
@@ -48,6 +99,7 @@ export default function TailorOrderDetail() {
   const actions = TAILOR_ACTIONS[order.status] ?? []
   const measurements = order.measurements ?? {}
   const items = order.items?.length ? order.items : [order]
+  const history = order.history ?? []
 
   return (
     <div>
@@ -155,6 +207,73 @@ export default function TailorOrderDetail() {
             )}
           </div>
 
+          <div className="td-card">
+            <h3 className="tod-card-title">Хүргэлтийн явц</h3>
+            {order.shipment ? (
+              <div className="tod-info-rows">
+                <div className="tod-info-row">
+                  <span className="tod-info-key">Горим</span>
+                  <span className="tod-info-val">
+                    {SHIPMENT_MODE_LABEL[order.shipment.mode] ?? order.shipment.mode}
+                  </span>
+                </div>
+                <div className="tod-info-row">
+                  <span className="tod-info-key">Төлөв</span>
+                  <span className="tod-info-val">
+                    {SHIPMENT_STATUS_LABEL[order.shipment.status] ?? order.shipment.status}
+                  </span>
+                </div>
+                {order.shipment.carrier_name && (
+                  <div className="tod-info-row">
+                    <span className="tod-info-key">Хүргэгч</span>
+                    <span className="tod-info-val">{order.shipment.carrier_name}</span>
+                  </div>
+                )}
+                {order.shipment.tracking_code && (
+                  <div className="tod-info-row">
+                    <span className="tod-info-key">Tracking</span>
+                    <span className="tod-info-val">{order.shipment.tracking_code}</span>
+                  </div>
+                )}
+                {order.shipment.note && (
+                  <div className="tod-info-row">
+                    <span className="tod-info-key">
+                      {order.shipment.mode === 'pickup' ? 'Авах нөхцөл' : 'Тэмдэглэл'}
+                    </span>
+                    <span className="tod-info-val">{order.shipment.note}</span>
+                  </div>
+                )}
+                {order.shipment.shipped_at && (
+                  <div className="tod-info-row">
+                    <span className="tod-info-key">Эхэлсэн</span>
+                    <span className="tod-info-val">{formatDateTime(order.shipment.shipped_at)}</span>
+                  </div>
+                )}
+                {order.shipment.delivered_at && (
+                  <div className="tod-info-row">
+                    <span className="tod-info-key">Хүргэгдсэн</span>
+                    <span className="tod-info-val">{formatDateTime(order.shipment.delivered_at)}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="tod-ship-hint">
+                Захиалга оёдлоос гарч бэлэн болсон үед хүргэлтийн мэдээлэл энд бүртгэгдэнэ.
+              </p>
+            )}
+
+            {order.status === 'ready' && (
+              <button
+                type="button"
+                className="tod-action-btn tod-action-btn--primary tod-ship-start"
+                onClick={() => setShipOpen(true)}
+                disabled={shipLoading}
+              >
+                Хүргэлт эхлүүлэх
+              </button>
+            )}
+          </div>
+
           {/* Actions */}
           {actions.length > 0 && (
             <div className="td-card tod-actions-card">
@@ -183,8 +302,133 @@ export default function TailorOrderDetail() {
             </div>
           )}
 
+          <div className="td-card">
+            <h3 className="tod-card-title">Явцын түүх</h3>
+            {history.length === 0 ? (
+              <p className="tod-ship-hint">Түүх бүртгэгдээгүй байна.</p>
+            ) : (
+              <ol className="tod-timeline">
+                {history.map((h, idx) => (
+                  <li key={idx} className="tod-timeline__item">
+                    <span className={`td-badge ${statusBadgeClass(h.to_status)}`}>
+                      {STATUS_LABEL[h.to_status] ?? h.to_status}
+                    </span>
+                    <div className="tod-timeline__body">
+                      <div className="tod-timeline__date">
+                        {formatDateTime(h.changed_at)}
+                        {h.changed_by_name ? ` · ${h.changed_by_name}` : ''}
+                      </div>
+                      {h.note && (
+                        <div className="tod-timeline__note">{h.note}</div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+
         </div>
       </div>
+
+      {shipOpen && (
+        <div className="ship-overlay" onClick={() => !shipLoading && setShipOpen(false)}>
+          <form className="ship-modal" onSubmit={handleShipSubmit} onClick={e => e.stopPropagation()}>
+            <button
+              type="button"
+              className="ship-close"
+              onClick={() => !shipLoading && setShipOpen(false)}
+              aria-label="Хаах"
+            >
+              ×
+            </button>
+
+            <h2 className="ship-title">Хүргэлтийн мэдээлэл</h2>
+
+            <div className="ship-modes">
+              <label className={`ship-mode-card${shipForm.mode === 'courier' ? ' is-active' : ''}`}>
+                <input
+                  type="radio"
+                  name="ship-mode"
+                  value="courier"
+                  checked={shipForm.mode === 'courier'}
+                  onChange={e => handleShipChange('mode', e.target.value)}
+                />
+                <span className="ship-mode-title">Хүргэлтээр явуулах</span>
+                <span className="ship-mode-desc">Хүргэгч байгууллага болон tracking код бүртгэнэ.</span>
+              </label>
+              <label className={`ship-mode-card${shipForm.mode === 'pickup' ? ' is-active' : ''}`}>
+                <input
+                  type="radio"
+                  name="ship-mode"
+                  value="pickup"
+                  checked={shipForm.mode === 'pickup'}
+                  onChange={e => handleShipChange('mode', e.target.value)}
+                />
+                <span className="ship-mode-title">Өөрөө ирж авах</span>
+                <span className="ship-mode-desc">Авах өдөр, цаг, холбоо барих нөхцөлийг бичнэ.</span>
+              </label>
+            </div>
+
+            {shipForm.mode === 'courier' && (
+              <>
+                <label className="ship-field">
+                  <span>Хүргэгч байгууллага</span>
+                  <input
+                    value={shipForm.carrier_name}
+                    onChange={e => handleShipChange('carrier_name', e.target.value)}
+                    placeholder="Жишээ: Монгол шуудан"
+                    disabled={shipLoading}
+                    required
+                  />
+                </label>
+                <label className="ship-field">
+                  <span>Tracking код</span>
+                  <input
+                    value={shipForm.tracking_code}
+                    onChange={e => handleShipChange('tracking_code', e.target.value)}
+                    placeholder="Жишээ: MN123456789"
+                    disabled={shipLoading}
+                    required
+                  />
+                </label>
+              </>
+            )}
+
+            <label className="ship-field">
+              <span>{shipForm.mode === 'pickup' ? 'Авах нөхцөл' : 'Нэмэлт тэмдэглэл'}</span>
+              <textarea
+                rows={3}
+                value={shipForm.note}
+                onChange={e => handleShipChange('note', e.target.value)}
+                placeholder={shipForm.mode === 'pickup' ? 'Жишээ: 5 сарын 22-нд 14:00 цагаас авах боломжтой' : 'Заавал биш'}
+                disabled={shipLoading}
+                required={shipForm.mode === 'pickup'}
+              />
+            </label>
+
+            {shipError && <div className="ship-error">{shipError}</div>}
+
+            <div className="ship-actions">
+              <button
+                type="button"
+                className="tod-action-btn"
+                onClick={() => !shipLoading && setShipOpen(false)}
+                disabled={shipLoading}
+              >
+                Болих
+              </button>
+              <button
+                type="submit"
+                className="tod-action-btn tod-action-btn--primary"
+                disabled={shipLoading}
+              >
+                {shipLoading ? 'Бүртгэж байна...' : 'Хүргэлтэд гаргах'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   )
 }

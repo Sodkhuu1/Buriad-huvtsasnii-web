@@ -22,7 +22,7 @@ const getStats = async (req, res, next) => {
         SELECT
           COUNT(*)                                                              AS total_orders,
           COUNT(*) FILTER (WHERE status IN ('submitted','under_review'))        AS pending_orders,
-          COUNT(*) FILTER (WHERE status = 'in_production')                      AS active_orders,
+          COUNT(*) FILTER (WHERE status IN ('in_production','ready','shipped')) AS active_orders,
           COUNT(*) FILTER (WHERE status IN ('delivered','completed'))           AS completed_orders,
           COALESCE(SUM(total_amount) FILTER (WHERE status IN ('delivered','completed')), 0) AS total_revenue
         FROM orders

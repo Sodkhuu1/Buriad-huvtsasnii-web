@@ -20,11 +20,11 @@ export const ORDER_STATUS_LABEL = {
   accepted:            'Захиалга баталсан',
   rejected:            'Захиалга татгалзсан',
   deposit_paid:        'Захиалга баталсан',
-  in_production:       'Хийгдэж эхэлсэн',
-  ready:               'Хүлээлгэж өгсөн',
-  shipped:             'Хүлээлгэж өгсөн',
-  delivered:           'Хүлээлгэж өгсөн',
-  completed:           'Хүлээлгэж өгсөн',
+  in_production:       'Оёдол хийгдэж байна',
+  ready:               'Хүргэлтэд бэлэн',
+  shipped:             'Хүргэлтэд гарсан',
+  delivered:           'Хүргэгдсэн',
+  completed:           'Дууссан',
   cancelled:           'Цуцлагдсан',
 }
 

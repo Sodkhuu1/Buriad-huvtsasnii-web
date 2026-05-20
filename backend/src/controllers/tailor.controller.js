@@ -7,14 +7,15 @@ const notify = require('../services/notifications')
 // Status -> medeglelin gar utga (zahialagchid harah)
 const STATUS_NOTIFY_TEXT = {
   in_production: { title: 'Захиалга хийгдэж эхэллээ', content: 'Таны захиалгын үйлдвэрлэл эхэллээ.' },
-  delivered:     { title: 'Захиалга хүлээлгэж өглөө', content: 'Таны захиалга хүлээлгэж өгсөн төлөвт орлоо.' },
+  ready:         { title: 'Захиалга хүргэлтэд бэлэн боллоо', content: 'Таны захиалга бэлэн болж хүргэлтийн шатанд шилжлээ.' },
+  delivered:     { title: 'Захиалга хүргэгдлээ', content: 'Таны захиалга хүргэгдсэн төлөвт орлоо.' },
 }
 
 // Zovshoorogdson status shilijill (DB lowercase ENUM-tai taarna)
 const ALLOWED_TRANSITIONS = {
   accepted:      ['in_production'],
   deposit_paid:  ['in_production'],
-  in_production: ['delivered'],
+  in_production: ['ready'],
   ready:         ['delivered'],
   shipped:       ['delivered'],
 }
@@ -165,6 +166,17 @@ const getOrderById = async (req, res, next) => {
     )
     const shipment = shipRes.rows[0] ?? null
 
+    const historyRes = await pool.query(
+      `SELECT h.from_status, h.to_status, h.note, h.changed_at,
+              u.full_name AS changed_by_name,
+              u.role AS changed_by_role
+       FROM order_status_history h
+       LEFT JOIN users u ON u.id = h.changed_by_id
+       WHERE h.order_id = $1
+       ORDER BY h.changed_at ASC`,
+      [req.params.id]
+    )
+
     res.json({
       success: true,
       order: {
@@ -174,6 +186,7 @@ const getOrderById = async (req, res, next) => {
         items: itemsResult.rows,
         measurements,
         shipment,
+        history: historyRes.rows,
       },
     })
   } catch (err) {
@@ -321,12 +334,15 @@ const updateOrderStatus = async (req, res, next) => {
       [nextStatus, req.params.id]
     )
 
-    // Hereg bol shipment-iig delivered bolgoh
     if (nextStatus === 'delivered') {
       await client.query(
-        `UPDATE shipments SET status = 'delivered', delivered_at = NOW()
-         WHERE order_id = $1`,
-        [req.params.id]
+        `INSERT INTO shipments (order_id, mode, note, status, delivered_at)
+         VALUES ($1, 'pickup', $2, 'delivered', NOW())
+         ON CONFLICT (order_id) DO UPDATE
+           SET status = 'delivered',
+               delivered_at = NOW(),
+               note = COALESCE(shipments.note, EXCLUDED.note)`,
+        [req.params.id, note || 'Захиалгыг хүлээлгэж өгсөн']
       )
     }
 

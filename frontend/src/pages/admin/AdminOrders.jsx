@@ -3,7 +3,7 @@ import { api } from '../../api'
 import { ORDER_STATUS_LABEL, orderStatusBadgeClass, fmtDate, fmtMoney } from './adminUtils'
 
 const STATUS_OPTIONS = [
-  'submitted', 'accepted', 'rejected', 'in_production', 'delivered',
+  'submitted', 'accepted', 'rejected', 'in_production', 'ready', 'shipped', 'delivered',
 ]
 
 export default function AdminOrders() {

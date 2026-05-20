@@ -5,11 +5,11 @@ export const STATUS_LABEL = {
   needs_clarification:  'Захиалга илгээгдсэн',
   accepted:             'Захиалга баталсан',
   deposit_paid:         'Захиалга баталсан',
-  in_production:        'Хийгдэж эхэлсэн',
-  ready:                'Хүлээлгэж өгсөн',
-  shipped:              'Хүлээлгэж өгсөн',
-  delivered:            'Хүлээлгэж өгсөн',
-  completed:            'Хүлээлгэж өгсөн',
+  in_production:        'Оёдол хийгдэж байна',
+  ready:                'Хүргэлтэд бэлэн',
+  shipped:              'Хүргэлтэд гарсан',
+  delivered:            'Хүргэгдсэн',
+  completed:            'Дууссан',
   rejected:             'Захиалга татгалзсан',
   cancelled:            'Цуцлагдсан',
 }
@@ -19,19 +19,19 @@ export const statusBadgeClass = (status) =>
 
 export const TAILOR_ACTIONS = {
   accepted: [
-    { label: 'Хийгдэж эхэлсэн', next: 'in_production', style: 'primary' },
+    { label: 'Оёдол эхлүүлэх', next: 'in_production', style: 'primary' },
   ],
   deposit_paid: [
-    { label: 'Хийгдэж эхэлсэн', next: 'in_production', style: 'primary' },
+    { label: 'Оёдол эхлүүлэх', next: 'in_production', style: 'primary' },
   ],
   in_production: [
-    { label: 'Хүлээлгэж өгсөн', next: 'delivered', style: 'primary' },
+    { label: 'Хүргэлтэд бэлэн', next: 'ready', style: 'primary' },
   ],
   ready: [
-    { label: 'Хүлээлгэж өгсөн', next: 'delivered', style: 'primary' },
+    { label: 'Шууд хүргэгдсэн', next: 'delivered', style: 'primary' },
   ],
   shipped: [
-    { label: 'Хүлээлгэж өгсөн', next: 'delivered', style: 'primary' },
+    { label: 'Хүргэгдсэн', next: 'delivered', style: 'primary' },
   ],
 }
 
@@ -48,3 +48,18 @@ export const MEASUREMENT_LABEL = {
   sleeve:   'Гарын урт',
   shoulder: 'Мөрний өргөн',
 }
+
+export const SHIPMENT_STATUS_LABEL = {
+  preparing:  'Бэлтгэгдэж байна',
+  in_transit: 'Хүргэлтэд явж байна',
+  delivered:  'Хүргэгдсэн',
+  returned:   'Буцаагдсан',
+}
+
+export const formatDateTime = (value) =>
+  value
+    ? new Date(value).toLocaleString('mn-MN', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      })
+    : ''

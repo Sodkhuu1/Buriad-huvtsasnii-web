@@ -387,6 +387,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 14px;
   font-size: 0.9rem;
 }
 
@@ -398,6 +399,78 @@
 .mod-info-val {
   font-weight: 500;
   color: var(--text-dark);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* Progress */
+.mod-progress {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.mod-progress__step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--text-light);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.mod-progress__step::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: calc(-50% + 14px);
+  right: calc(50% + 14px);
+  height: 2px;
+  background: var(--cream-dark);
+}
+
+.mod-progress__step:first-child::before {
+  display: none;
+}
+
+.mod-progress__dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--cream-dark);
+  background: var(--white);
+  z-index: 1;
+}
+
+.mod-progress__step.is-done,
+.mod-progress__step.is-current {
+  color: var(--navy);
+}
+
+.mod-progress__step.is-done::before,
+.mod-progress__step.is-current::before {
+  background: var(--crimson);
+}
+
+.mod-progress__step.is-done .mod-progress__dot,
+.mod-progress__step.is-current .mod-progress__dot {
+  border-color: var(--crimson);
+  background: var(--crimson);
+}
+
+.mod-progress__step.is-current .mod-progress__dot {
+  box-shadow: 0 0 0 4px rgba(139, 26, 42, 0.12);
+}
+
+.mod-progress__label {
+  overflow-wrap: anywhere;
 }
 
 /* Price */
@@ -503,6 +576,8 @@
 @media (max-width: 768px) {
   .mod-grid         { grid-template-columns: 1fr; }
   .mod-measurements { grid-template-columns: 1fr; }
+  .mod-progress     { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 16px; }
+  .mod-progress__step:nth-child(4)::before { display: none; }
 }
 
 @media (max-width: 600px) {

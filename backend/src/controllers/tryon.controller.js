@@ -1,9 +1,66 @@
 const { createError } = require('../middleware/errorHandler')
 
 const TRYON_SPACE = process.env.TRYON_SPACE || 'yisol/IDM-VTON'
+const TRYON_API_NAME = process.env.TRYON_API_NAME || '/tryon'
 const TRYON_STEPS = Number(process.env.TRYON_STEPS || 30)
 const TRYON_SEED = Number(process.env.TRYON_SEED || 42)
 const MAX_IMAGE_BYTES = Number(process.env.TRYON_MAX_IMAGE_BYTES || 8 * 1024 * 1024)
+const TRYON_CONNECT_TIMEOUT_MS = Number(process.env.TRYON_CONNECT_TIMEOUT_MS || 20000)
+const TRYON_HF_TOKEN = process.env.TRYON_HF_TOKEN || ''
+
+let cachedTryOnApp = null
+
+const withTimeout = (promise, timeoutMs, message) => {
+  let timeoutId
+  const timeout = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs)
+  })
+
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId))
+}
+
+const isTryOnServiceConfigError = (err) => {
+  const message = err?.message || ''
+  return [
+    'Could not resolve app config',
+    'Space metadata could not be loaded',
+    'Your space is in error',
+    'fetch failed',
+    'timeout',
+    '503',
+  ].some(pattern => message.includes(pattern))
+}
+
+const createTryOnServiceError = (err) => {
+  if (err?.statusCode) return err
+
+  if (isTryOnServiceConfigError(err)) {
+    return createError(
+      503,
+      `Өмсөөд үзэх AI үйлчилгээ түр ажиллахгүй байна. TRYON_SPACE=${TRYON_SPACE} Gradio app config буцаахгүй байна. Hugging Face Space-ээ асаагаад эсвэл TRYON_SPACE-г ажиллаж байгаа Space рүү солино уу.`
+    )
+  }
+
+  return createError(502, 'Өмсөөд үзэх AI үйлчилгээ алдаа буцаалаа. Дахин оролдоно уу.')
+}
+
+const getTryOnApp = async () => {
+  if (!cachedTryOnApp) {
+    const { Client } = await import('@gradio/client')
+    const options = TRYON_HF_TOKEN ? { token: TRYON_HF_TOKEN } : undefined
+
+    cachedTryOnApp = withTimeout(
+      Client.connect(TRYON_SPACE, options),
+      TRYON_CONNECT_TIMEOUT_MS,
+      'Try-on service config timeout'
+    ).catch((err) => {
+      cachedTryOnApp = null
+      throw err
+    })
+  }
+
+  return cachedTryOnApp
+}
 
 const dataUrlToBlob = (dataUrl) => {
   const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,([a-zA-Z0-9+/=\r\n]+)$/.exec(dataUrl || '')
@@ -82,9 +139,8 @@ const runTryOn = async (req, res, next) => {
     const garmentUrl = assertPublicImageUrl(garment_image_url)
     const garmentBlob = await fetchImageBlob(garmentUrl)
 
-    const { Client } = await import('@gradio/client')
-    const app = await Client.connect(TRYON_SPACE)
-    const result = await app.predict('/tryon', [
+    const app = await getTryOnApp()
+    const result = await app.predict(TRYON_API_NAME, [
       { background: humanBlob, layers: [], composite: null },
       garmentBlob,
       garment_name || 'garment',
@@ -103,8 +159,8 @@ const runTryOn = async (req, res, next) => {
 
     res.json({ success: true, result_url: resultUrl })
   } catch (err) {
-    next(err)
+    next(createTryOnServiceError(err))
   }
 }
 
-module.exports = { runTryOn }
+module.exports = { runTryOn, createTryOnServiceError }

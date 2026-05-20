@@ -4,6 +4,7 @@ import { api } from '../api'
 import OrderChat from '../components/OrderChat'
 import {
   STATUS_LABEL, statusBadgeClass, MEASUREMENT_LABEL, SHIPMENT_MODE_LABEL,
+  SHIPMENT_STATUS_LABEL, ORDER_PROGRESS_STEPS, getProgressIndex,
   formatDate, formatDateTime,
 } from './customerUtils'
 import './MyOrderDetail.css'
@@ -85,6 +86,7 @@ export default function MyOrderDetail() {
   const measurements = order.measurements ?? {}
   const history      = order.history ?? []
   const items        = order.items?.length ? order.items : [order]
+  const progressIndex = getProgressIndex(order.status)
 
   return (
     <div className="mod-wrap container">
@@ -251,6 +253,26 @@ export default function MyOrderDetail() {
 
         <div className="mod-col">
 
+          <div className="mod-card">
+            <h3 className="mod-card-title">Захиалгын явц</h3>
+            <ol className="mod-progress">
+              {ORDER_PROGRESS_STEPS.map((step, idx) => {
+                const state = idx < progressIndex
+                  ? 'is-done'
+                  : idx === progressIndex
+                    ? 'is-current'
+                    : ''
+
+                return (
+                  <li key={step.key} className={`mod-progress__step ${state}`}>
+                    <span className="mod-progress__dot" />
+                    <span className="mod-progress__label">{step.label}</span>
+                  </li>
+                )
+              })}
+            </ol>
+          </div>
+
           {/* Measurements */}
           <div className="mod-card">
             <h3 className="mod-card-title">Биеийн хэмжээс</h3>
@@ -270,15 +292,20 @@ export default function MyOrderDetail() {
             )}
           </div>
 
-          {/* Hurgliin medeellig harag */}
-          {order.shipment && (
-            <div className="mod-card">
-              <h3 className="mod-card-title">Хүргэлт</h3>
+          <div className="mod-card">
+            <h3 className="mod-card-title">Хүргэлтийн явц</h3>
+            {order.shipment ? (
               <div className="mod-info-rows">
                 <div className="mod-info-row">
                   <span className="mod-info-key">Горим</span>
                   <span className="mod-info-val">
                     {SHIPMENT_MODE_LABEL[order.shipment.mode] ?? order.shipment.mode}
+                  </span>
+                </div>
+                <div className="mod-info-row">
+                  <span className="mod-info-key">Төлөв</span>
+                  <span className="mod-info-val">
+                    {SHIPMENT_STATUS_LABEL[order.shipment.status] ?? order.shipment.status}
                   </span>
                 </div>
                 {order.shipment.carrier_name && (
@@ -309,9 +336,21 @@ export default function MyOrderDetail() {
                     </span>
                   </div>
                 )}
+                {order.shipment.delivered_at && (
+                  <div className="mod-info-row">
+                    <span className="mod-info-key">Хүргэгдсэн</span>
+                    <span className="mod-info-val">
+                      {formatDateTime(order.shipment.delivered_at)}
+                    </span>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="mod-muted">
+                Оёдол дуусаж хүргэлтэд бэлэн болох үед авах нөхцөл эсвэл tracking мэдээлэл энд харагдана.
+              </p>
+            )}
+          </div>
 
           {/* Uneglee — huleelgej ogson zahialgand */}
           {['delivered', 'completed'].includes(order.status) && (
@@ -391,6 +430,7 @@ export default function MyOrderDetail() {
                     <div className="mod-timeline__body">
                       <div className="mod-timeline__date">
                         {formatDateTime(h.changed_at)}
+                        {h.changed_by_name ? ` · ${h.changed_by_name}` : ''}
                       </div>
                       {h.note && (
                         <div className="mod-timeline__note">{h.note}</div>

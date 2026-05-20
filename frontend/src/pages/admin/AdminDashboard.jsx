@@ -51,8 +51,8 @@ export default function AdminDashboard() {
       ['Нийт захиалга', stats?.total_orders ?? 0],
       ['Нийт орлого', stats?.total_revenue ?? 0],
       ['Хүлээгдэж буй', stats?.pending_orders ?? 0],
-      ['Хийгдэж эхэлсэн', stats?.active_orders ?? 0],
-      ['Хүлээлгэж өгсөн', stats?.completed_orders ?? 0],
+      ['Идэвхтэй явц', stats?.active_orders ?? 0],
+      ['Хүргэгдсэн', stats?.completed_orders ?? 0],
       ['Хаагдсан хэрэглэгч', stats?.blocked_users ?? 0],
     ]
     const csv = `\ufeff${rows.map(row => row.join(',')).join('\n')}`
@@ -87,14 +87,14 @@ export default function AdminDashboard() {
     { tone: 'orders', icon: '≡', value: fmtNumber(stats?.total_orders), label: 'Нийт захиалга' },
     { tone: 'revenue', icon: '₮', value: fmtCompactMoney(stats?.total_revenue), label: 'Нийт орлого' },
     { tone: 'pending', icon: '⌛', value: fmtNumber(stats?.pending_orders), label: 'Хүлээгдэж буй' },
-    { tone: 'active', icon: '⚙', value: fmtNumber(stats?.active_orders), label: 'Хийгдэж эхэлсэн' },
-    { tone: 'completed', icon: '✓', value: fmtNumber(stats?.completed_orders), label: 'Хүлээлгэж өгсөн' },
+    { tone: 'active', icon: '⚙', value: fmtNumber(stats?.active_orders), label: 'Идэвхтэй явц' },
+    { tone: 'completed', icon: '✓', value: fmtNumber(stats?.completed_orders), label: 'Хүргэгдсэн' },
     { tone: 'blocked', icon: '×', value: fmtNumber(stats?.blocked_users), label: 'Хаагдсан хэрэглэгч' },
   ]
 
   const statusLegend = [
-    { label: 'Хүлээлгэж өгсөн', value: completedPercent, className: 'ad-donut__dot--done' },
-    { label: 'Хийгдэж буй', value: progressPercent, className: 'ad-donut__dot--progress' },
+    { label: 'Хүргэгдсэн', value: completedPercent, className: 'ad-donut__dot--done' },
+    { label: 'Идэвхтэй явц', value: progressPercent, className: 'ad-donut__dot--progress' },
     { label: 'Хүлээгдэж буй', value: pendingPercent, className: 'ad-donut__dot--pending' },
     { label: 'Зогссон', value: stoppedPercent, className: 'ad-donut__dot--stopped' },
   ]

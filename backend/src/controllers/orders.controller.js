@@ -285,10 +285,13 @@ const getMyOrderById = async (req, res, next) => {
     measResult.rows.forEach(r => { measurements[r.metric_code] = r.metric_value })
 
     const historyResult = await pool.query(
-      `SELECT from_status, to_status, note, changed_at
-       FROM order_status_history
-       WHERE order_id = $1
-       ORDER BY changed_at ASC`,
+      `SELECT h.from_status, h.to_status, h.note, h.changed_at,
+              u.full_name AS changed_by_name,
+              u.role AS changed_by_role
+       FROM order_status_history h
+       LEFT JOIN users u ON u.id = h.changed_by_id
+       WHERE h.order_id = $1
+       ORDER BY h.changed_at ASC`,
       [req.params.id]
     )
 
@@ -401,7 +404,7 @@ const confirmDelivery = async (req, res, next) => {
     if (!orderResult.rows.length) throw createError(404, 'Захиалга олдсонгүй')
 
     if (orderResult.rows[0].status !== 'delivered') {
-      throw createError(400, 'Зөвхөн "Хүлээлгэж өгсөн" төлөвт байгаа захиалгыг батлах боломжтой')
+      throw createError(400, 'Зөвхөн "Хүргэгдсэн" төлөвт байгаа захиалгыг батлах боломжтой')
     }
 
     const updated = await client.query(

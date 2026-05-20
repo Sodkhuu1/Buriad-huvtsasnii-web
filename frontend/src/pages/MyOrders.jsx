@@ -9,8 +9,8 @@ const FILTERS = [
   { key: 'submitted',     label: 'Илгээгдсэн' },
   { key: 'accepted',      label: 'Баталсан' },
   { key: 'rejected',      label: 'Татгалзсан' },
-  { key: 'in_production', label: 'Хийгдэж эхэлсэн' },
-  { key: 'delivered',     label: 'Хүлээлгэж өгсөн' },
+  { key: 'in_production', label: 'Оёдол' },
+  { key: 'delivered',     label: 'Хүргэлт' },
 ]
 
 export default function MyOrders() {

@@ -6,11 +6,11 @@ export const STATUS_LABEL = {
   accepted:             'Захиалга баталсан',
   rejected:             'Захиалга татгалзсан',
   deposit_paid:         'Захиалга баталсан',
-  in_production:        'Хийгдэж эхэлсэн',
-  ready:                'Хүлээлгэж өгсөн',
-  shipped:              'Хүлээлгэж өгсөн',
-  delivered:            'Хүлээлгэж өгсөн',
-  completed:            'Хүлээлгэж өгсөн',
+  in_production:        'Оёдол хийгдэж байна',
+  ready:                'Хүргэлтэд бэлэн',
+  shipped:              'Хүргэлтэд гарсан',
+  delivered:            'Хүргэгдсэн',
+  completed:            'Дууссан',
   cancelled:            'Цуцлагдсан',
 }
 
@@ -20,6 +20,27 @@ export const statusBadgeClass = (status) =>
 export const SHIPMENT_MODE_LABEL = {
   pickup:  'Өөрөө ирж авах',
   courier: '3-дагч хүргэлт',
+}
+
+export const SHIPMENT_STATUS_LABEL = {
+  preparing:  'Бэлтгэгдэж байна',
+  in_transit: 'Хүргэлтэд явж байна',
+  delivered:  'Хүргэгдсэн',
+  returned:   'Буцаагдсан',
+}
+
+export const ORDER_PROGRESS_STEPS = [
+  { key: 'submitted', label: 'Илгээсэн', statuses: ['submitted', 'under_review', 'needs_clarification'] },
+  { key: 'accepted', label: 'Баталгаажсан', statuses: ['accepted', 'deposit_paid'] },
+  { key: 'in_production', label: 'Оёдол', statuses: ['in_production'] },
+  { key: 'ready', label: 'Бэлэн', statuses: ['ready'] },
+  { key: 'shipped', label: 'Хүргэлт', statuses: ['shipped'] },
+  { key: 'delivered', label: 'Хүргэгдсэн', statuses: ['delivered', 'completed'] },
+]
+
+export const getProgressIndex = (status) => {
+  const index = ORDER_PROGRESS_STEPS.findIndex(step => step.statuses.includes(status))
+  return index === -1 ? 0 : index
 }
 
 export const MEASUREMENT_LABEL = {
