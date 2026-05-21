@@ -282,18 +282,28 @@
   display: none;
   width: min(100% - 32px, var(--container-width));
   margin: 12px auto 0;
-  padding: 16px 18px 18px;
+  padding: 0 18px;
+  flex-direction: column;
   border-radius: 28px;
   background: rgba(17, 28, 41, 0.96);
-  border: 1px solid rgba(201, 163, 95, 0.14);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid transparent;
+  box-shadow: none;
   max-height: 0;
+  opacity: 0;
   overflow: hidden;
-  transition: max-height 0.35s ease, padding 0.35s ease;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: max-height 0.35s ease, padding 0.35s ease, opacity 0.25s ease, transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .navbar__mobile--open {
   max-height: 520px;
+  padding: 16px 18px 18px;
+  border-color: rgba(201, 163, 95, 0.14);
+  box-shadow: var(--shadow-lg);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .navbar__mobile-brand {
