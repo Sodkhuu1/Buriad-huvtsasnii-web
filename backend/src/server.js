@@ -34,6 +34,11 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .map((s) => s.trim())
   .filter(Boolean);
 
+// Local dev deer localhost ba 127.0.0.1-iig hoyulang ni zovshoorno
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:5173', 'http://127.0.0.1:5173');
+}
+
 // --- Middleware ---
 // cors: frontend (Vercel) → backend (Render) cross-origin call zovshoorono
 // credentials: true bnal browser cookie ilgeene

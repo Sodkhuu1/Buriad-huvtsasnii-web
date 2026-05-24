@@ -1,6 +1,6 @@
 const { createError } = require('../middleware/errorHandler')
 
-const TRYON_SPACE = process.env.TRYON_SPACE || 'yisol/IDM-VTON'
+const TRYON_SPACE = process.env.TRYON_SPACE || 'Sodkhuu/tryon'
 const TRYON_API_NAME = process.env.TRYON_API_NAME || '/tryon'
 const TRYON_STEPS = Number(process.env.TRYON_STEPS || 30)
 const TRYON_SEED = Number(process.env.TRYON_SEED || 42)

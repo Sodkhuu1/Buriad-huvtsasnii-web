@@ -3,7 +3,7 @@ import { api } from '../../api'
 import './TailorDesigns.css'
 
 const EMPTY_FORM = {
-  name: '', category_id: '', base_price: '', ceremonial_use: '', silhouette: '',
+  name: '', category_id: '', base_price: '',
   image_url: '', flat_image_url: '',
 }
 
@@ -45,8 +45,6 @@ export default function TailorDesigns() {
       name:            design.name            ?? '',
       category_id:     design.category_id     ?? '',
       base_price:      design.base_price      ?? '',
-      ceremonial_use:  design.ceremonial_use  ?? '',
-      silhouette:      design.silhouette      ?? '',
       image_url:       design.image_url       ?? '',
       flat_image_url:  design.flat_image_url  ?? '',
     })
@@ -126,14 +124,7 @@ export default function TailorDesigns() {
                 <label>Үндсэн үнэ (₮) *</label>
                 <input name="base_price" type="number" min="0" value={form.base_price} onChange={handleField} required />
               </div>
-              <div className="td-field">
-                <label>Ёслолын зориулалт</label>
-                <input name="ceremonial_use" value={form.ceremonial_use} onChange={handleField} placeholder="Цагаан сар, гэрлэлтийн ёслол..." />
-              </div>
-              <div className="td-field">
-                <label>Силуэт</label>
-                <input name="silhouette" value={form.silhouette} onChange={handleField} placeholder="A-line, шулуун..." />
-              </div>
+
               <div className="td-field">
                 <label>Зургийн URL</label>
                 <input name="image_url" value={form.image_url} onChange={handleField} placeholder="https://..." />
@@ -172,7 +163,7 @@ export default function TailorDesigns() {
               <div className="td-card__body">
                 <div className="td-card__cat">{d.category_name ?? '—'}</div>
                 <h3 className="td-card__name">{d.name}</h3>
-                {d.ceremonial_use && <p className="td-card__meta">{d.ceremonial_use}</p>}
+
                 <div className="td-card__price">{Number(d.base_price).toLocaleString()}₮</div>
               </div>
               <div className="td-card__actions">
