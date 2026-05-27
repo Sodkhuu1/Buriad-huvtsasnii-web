@@ -383,7 +383,7 @@ export default function Zahialga() {
                       )}
                       <h3 className="design-card__name">{design.name}</h3>
                       {design.ceremonial_use && <p className="design-card__desc">{design.ceremonial_use}</p>}
-                      <span className="design-card__price">{formatPrice(design.base_price)}-с эхлэн</span>
+                      <span className="design-card__price">{formatPrice(design.base_price)}-с эхлэнэ</span>
 
                       <button
                         type="button"

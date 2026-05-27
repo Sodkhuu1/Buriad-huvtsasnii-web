@@ -135,11 +135,14 @@ const createOrder = async (req, res, next) => {
 
     // ── Create the order ──────────────────────────────────────────────────────
 
+    // Design-аас tailor_id авна — бүх item нэг оёдолчинд хамаарна гэж үзнэ
+    const tailorId = designResult.rows[0]?.tailor_id ?? null
+
     const orderResult = await client.query(
-      `INSERT INTO orders (order_number, customer_id, status, subtotal, total_amount)
-       VALUES ($1, $2, 'submitted', $3, $3)
+      `INSERT INTO orders (order_number, customer_id, tailor_id, status, subtotal, total_amount)
+       VALUES ($1, $2, $3, 'submitted', $4, $4)
        RETURNING id, order_number, status, total_amount, created_at`,
-      [orderNumber, customer_id, subtotal]
+      [orderNumber, customer_id, tailorId, subtotal]
     )
     const order = orderResult.rows[0]
 

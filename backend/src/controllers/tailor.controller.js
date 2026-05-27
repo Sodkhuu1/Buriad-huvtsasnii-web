@@ -6,6 +6,8 @@ const notify = require('../services/notifications')
 
 // Status -> medeglelin gar utga (zahialagchid harah)
 const STATUS_NOTIFY_TEXT = {
+  accepted:      { title: 'Захиалга хүлээн авагдлаа', content: 'Таны захиалгыг оёдолчин хүлээн авлаа.' },
+  rejected:      { title: 'Захиалга татгалзагдлаа', content: 'Таны захиалгыг оёдолчин татгалзлаа.' },
   in_production: { title: 'Захиалга хийгдэж эхэллээ', content: 'Таны захиалгын үйлдвэрлэл эхэллээ.' },
   ready:         { title: 'Захиалга хүргэлтэд бэлэн боллоо', content: 'Таны захиалга бэлэн болж хүргэлтийн шатанд шилжлээ.' },
   delivered:     { title: 'Захиалга хүргэгдлээ', content: 'Таны захиалга хүргэгдсэн төлөвт орлоо.' },
@@ -13,6 +15,7 @@ const STATUS_NOTIFY_TEXT = {
 
 // Zovshoorogdson status shilijill (DB lowercase ENUM-tai taarna)
 const ALLOWED_TRANSITIONS = {
+  submitted:     ['accepted', 'rejected'],
   accepted:      ['in_production'],
   deposit_paid:  ['in_production'],
   in_production: ['ready'],
@@ -60,7 +63,7 @@ const getOrders = async (req, res, next) => {
   try {
     const { status, limit } = req.query
     const params = [req.user.id]
-    const conditions = ['o.tailor_id = $1', "o.status <> 'submitted'"]
+    const conditions = ['o.tailor_id = $1']
 
     if (status) {
       if (status === 'accepted') {
@@ -122,7 +125,7 @@ const getOrderById = async (req, res, next) => {
        JOIN order_items oi    ON oi.order_id = o.id
        JOIN garment_designs gd ON gd.id = oi.design_id
        LEFT JOIN garment_categories gc ON gc.id = gd.category_id
-       WHERE o.id = $1 AND o.tailor_id = $2 AND o.status <> 'submitted'`,
+       WHERE o.id = $1 AND o.tailor_id = $2`,
       [req.params.id, req.user.id]
     )
 
@@ -325,11 +328,13 @@ const updateOrderStatus = async (req, res, next) => {
       throw createError(400, `${currentStatus} → ${nextStatus} шилжих боломжгүй`)
     }
 
-    // Статус шинэчлэх
+    // Татгалзсан бол tailor_id-г тусдаа UPDATE-аар цэвэрлэнэ
+    const setClause = nextStatus === 'rejected'
+      ? 'SET status = $1, tailor_id = NULL, updated_at = NOW()'
+      : 'SET status = $1, updated_at = NOW()'
+
     const updated = await client.query(
-      `UPDATE orders
-       SET status = $1, updated_at = NOW()
-       WHERE id = $2
+      `UPDATE orders ${setClause} WHERE id = $2
        RETURNING id, order_number, status, total_amount, created_at`,
       [nextStatus, req.params.id]
     )
