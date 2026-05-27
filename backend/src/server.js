@@ -20,6 +20,8 @@ const paymentRoutes     = require('./routes/payments.routes')
 const notificationRoutes = require('./routes/notifications.routes')
 const tryOnRoutes       = require('./routes/tryon.routes')
 const chatRoutes        = require('./routes/chat.routes')
+const measurementRoutes = require('./routes/measurements.routes')
+const articleRoutes     = require('./routes/articles.routes')
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -72,7 +74,9 @@ app.use('/api/admin',    adminRoutes)
 app.use('/api/payments', paymentRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/tryon', tryOnRoutes)
-app.use('/api/chat', chatRoutes)
+app.use('/api/chat',         chatRoutes)
+app.use('/api/measurements', measurementRoutes)
+app.use('/api/articles',     articleRoutes)
 
 // Health check — useful to test if the server is running
 app.get('/api/health', (req, res) => {

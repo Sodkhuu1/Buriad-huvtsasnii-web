@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import './HuvtsasniiUtga.css'
 import deelImg from '../assets/deel-cutout.png'
+import emegteiDeelImg from '../assets/emegteiDeel-cutout.png'
 
-const PARTS = [
+const PARTS_MALE = [
   {
     id: 'malgai',
     label: 'Малгай',
@@ -54,34 +55,61 @@ const PARTS = [
   },
 ]
 
-const PART_MAP = Object.fromEntries(PARTS.map(p => [p.id, p]))
+const PARTS_FEMALE = [
+  {
+    id: 'malgai',
+    label: 'Малгай',
+    meaning: 'Эмэгтэй малгайн бэлгэдэл',
+    description:
+      'Буриад эмэгтэйчүүдийн малгай нь өндөр оройтой, дээдээ улаан торгон цацагтай, доош талд нь өргөн чимэглэлтэй эмжээртэй байдаг. Хори, Агын эмэгтэйчүүдийн малгай шовгор оройтой, Сэлэнгэ, Сартуулын эмэгтэйчүүдийн малгай арай өөр загвартай байсан. Малгайны хэлбэр, эмжээрийн чимэглэл нь тухайн эмэгтэйн овог, нутаг, нийгмийн байр сууриа илэрхийлэх дохио болж байжээ. Гэрлэсэн эмэгтэйчүүд малгайгаа гэртээ ч ховор тайладаг ёс хэвшсэн байсан бөгөөд малгайг хүндэтгэлийн зүйл хэмээн үздэг.',
+  },
+  {
+    id: 'usnii-goyol',
+    label: 'Үсний гоёл',
+    meaning: 'Шибэргэлжэ: Гэрлэлтийн бэлгэдэл',
+    description:
+      'Гэрлэсэн буриад эмэгтэйчүүд үсээ дунд хувааж, хоёр салаалуулан гүрж, хоёр талд унжуулдаг байв. Сүлжсэн үсний гадуур "шибэргэлжэ" хэмээх торгон бүрхүүлийг өмсгөж, дээр нь мөнгөн зоос, шүр, бирюз, ялууз зэргээр чимэглэсэн хадаасан гоёлыг зүүж унжуулдаг. Энэхүү үсний гоёл нь зөвхөн чимэглэл биш — гэрлэсэн эмэгтэйн нийгмийн шинэ статус, өрхийн баялаг, гэрлэлтийн нэр хүндийг харуулдаг бэлгэдэл байсан. Охин гэрлэхээс өмнө сул тавьсан үсээ гэрлэсний дараа албан ёсоор сүлжиж гоёлдох ёс хэвшсэн байжээ.',
+  },
+  {
+    id: 'uuzhi',
+    label: 'Уужи',
+    meaning: 'Уужи: Гэрлэсэн эмэгтэйн бэлгэ',
+    description:
+      'Уужи бол зөвхөн гэрлэсэн эмэгтэйчүүдийн өмсдөг ханцуйгүй, өргөн мөртэй, нурууны хэсэг урт гадуур хувцас юм. Дотор дээлний дээгүүр өмсдөг бөгөөд хээтэй торго, хилэн, хатгамалаар чимэглэгдсэн байдаг. Уужи нь "одоо би гэрлэсэн эмэгтэй" гэдэг шинэ статусын гол бэлгэдэл байсан. Уужины зах, мөр, нуруу, доод ирмэгийн чимэглэл нь тухайн эмэгтэйн нутаг, овог, гэр бүлийн бүтцийг харуулдаг бөгөөд хатан болсон эмэгтэй амьдралынхаа эцэс хүртэл уужигаа өмсдөг ёс байжээ.',
+  },
+  {
+    id: 'khantsui',
+    label: 'Ханцуй',
+    meaning: 'Олон давхар чимэглэл',
+    description:
+      'Эмэгтэйчүүдийн ханцуй нь хэд хэдэн хэсгээс бүрдсэн нийлмэл бүтэцтэй: мөрөн дээр сууриар хуниас, тохой орчимд олон давхарга өнгөт зурвас, нударган дээр туурай хэлбэрийн манжет (нударга). Зурвасны өнгө, тоо, эрэмбийг харахад тухайн эмэгтэйн нутаг, овог, насны бүлэг тодорхой болдог. Хори, Агын эмэгтэйчүүдийн ханцуйг ялангуяа тод улаан, шар, ногоон өнгөөр чимэглэх нь түгээмэл байсан. Туурай хэлбэрийн манжет нь мориной туурайн дурсамж бөгөөд хүйтэн агаараас гарыг хамгаалах практик үүрэгтэй.',
+  },
+  {
+    id: 'bus',
+    label: 'Бүс',
+    meaning: 'Эмэгтэй бүс ба чимэглэл',
+    description:
+      'Эмэгтэйчүүдийн бүс нь эрэгтэйчүүдийнхээс ялгаатай — нарийн, хатгамалтай зурвас, өнгөт даавуун бүс ашигладаг. Гэрлэсэн эмэгтэйчүүд уужи өмсдөг тул бүс ховор хэрэглэх боловч охид, охин насны эмэгтэйчүүд хатгамалтай нарийн бүсээр бүсэлдэг байжээ. Бүсний өнгө, чимэглэл нь нас, нийгмийн байр сууриа илэрхийлэх дохио болдог: залуу эмэгтэйчүүд тод улаан, ногоон өнгийг сонгодог бол ахмад настан даруу өнгөтэй бүс ашигладаг байв. Бүсний дээгүүр мөнгөн чимэг, түрийвч зүүх ёс түгээмэл байсан.',
+  },
+  {
+    id: 'khormoi',
+    label: 'Хормой',
+    meaning: 'Хормойн ирмэг ба бэлгэдэл',
+    description:
+      'Хормой нь урт, өргөн зайтай, ихэвчлэн шагай хүртэл унждаг хэлбэртэй. Доод ирмэгийг өнгийн хилэн, тууз, хатгамалаар чимэглэдэг бөгөөд энэ ирмэгийг "хормойн зурвас" хэмээдэг. Бэлгэдлийн утгаараа хормойн зурвас нь дунд ертөнцийн хязгаар, газрын ивээлийг илэрхийлдэг гэж үздэг. Залуу эмэгтэйчүүдийн хормой тод өнгөтэй, олон давхар зурвасан чимэглэлтэй байх бол ахмад настан түвшин, даруу өнгийг сонгодог. Өргөн зайтай хормой нь эмэгтэйн алхамд эрх чөлөө өгөхөөс гадна гутлыг далдалдаг практик үүрэгтэй.',
+  },
+]
 
-function DeelFigure({ hovered, onHover, onLeave }) {
-  // hotspot бүрд хэрэгтэй prop-уудыг нэг газраас тарааж байгаа
-  const h = (id) => ({
-    onMouseEnter: () => onHover(id),
-    onMouseLeave: onLeave,
-    onFocus: () => onHover(id),
-    onBlur: onLeave,
-    onClick: () => onHover(id),
-    className: `part-hotspot${hovered === id ? ' part-hotspot--active' : ''}`,
-    tabIndex: 0,
-    role: 'button',
-    'aria-label': PART_MAP[id].label,
-  })
-
-  return (
-    <div className={`deel-figure${hovered ? ' deel-figure--active' : ''}`}>
-      <img src={deelImg} alt="Буриад дэгэл" className="deel-image" />
-
-      {/* Зургийн дээгүүр давхарлах hotspot давхарга */}
-      <svg
-        className="deel-hotspots"
-        viewBox="0 0 250 600"
-        preserveAspectRatio="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-label="Буриад хувцасны интерактив хэсгүүд"
-      >
+// Хүйс тус бүрд зориулсан тохиргоо — зураг, viewBox, hotspot-ууд
+const VARIANTS = {
+  male: {
+    label: 'Эрэгтэй',
+    image: deelImg,
+    alt: 'Буриад эрэгтэй дэгэл',
+    viewBox: '0 0 250 600',
+    parts: PARTS_MALE,
+    renderHotspots: (h) => (
+      <>
         {/* Малгай */}
         <ellipse {...h('malgai')} cx="125" cy="35" rx="42" ry="30" />
 
@@ -103,14 +131,86 @@ function DeelFigure({ hovered, onHover, onLeave }) {
 
         {/* Гутал */}
         <rect {...h('gutal')} x="65" y="478" width="120" height="118" rx="8" />
+      </>
+    ),
+  },
+  female: {
+    label: 'Эмэгтэй',
+    image: emegteiDeelImg,
+    alt: 'Буриад эмэгтэй дээл',
+    viewBox: '0 0 250 600',
+    parts: PARTS_FEMALE,
+    renderHotspots: (h) => (
+      <>
+        {/* Малгай — улаан цацагтай шовгор малгай */}
+        <ellipse {...h('malgai')} cx="125" cy="35" rx="48" ry="42" />
+
+        {/* Ханцуй — зүүн ба баруун гарны бүтэн уртаар */}
+        <polygon {...h('khantsui')} points="5,90 55,90 65,290 5,290" />
+        <polygon {...h('khantsui')} points="195,90 245,90 245,290 185,290" />
+
+        {/* Уужи — төв хэсгийн чимэглэлт хантааз */}
+        <polygon {...h('uuzhi')} points="90,80 160,80 162,245 88,245" />
+
+        {/* Үсний гоёл — хантаазны хажуугаар хоёр талд нарийн зурвас */}
+        <polygon {...h('usnii-goyol')} points="58,90 88,90 88,220 60,220" />
+        <polygon {...h('usnii-goyol')} points="162,90 192,90 190,220 162,220" />
+
+        {/* Бүс — бүсний хатгамалт хэсэг */}
+        <rect {...h('bus')} x="50" y="245" width="150" height="48" rx="6" />
+
+        {/* Хормой — урт банзал */}
+        <polygon {...h('khormoi')} points="25,293 225,293 240,595 10,595" />
+      </>
+    ),
+  },
+}
+
+function DeelFigure({ variant, hovered, onHover, onLeave }) {
+  // hotspot бүрд хэрэгтэй prop-уудыг нэг газраас тарааж байгаа
+  const partMap = Object.fromEntries(variant.parts.map(p => [p.id, p]))
+  const h = (id) => ({
+    onMouseEnter: () => onHover(id),
+    onMouseLeave: onLeave,
+    onFocus: () => onHover(id),
+    onBlur: onLeave,
+    onClick: () => onHover(id),
+    className: `part-hotspot${hovered === id ? ' part-hotspot--active' : ''}`,
+    tabIndex: 0,
+    role: 'button',
+    'aria-label': partMap[id]?.label || id,
+  })
+
+  return (
+    <div className={`deel-figure${hovered ? ' deel-figure--active' : ''}`}>
+      <img src={variant.image} alt={variant.alt} className="deel-image" />
+
+      {/* Зургийн дээгүүр давхарлах hotspot давхарга */}
+      <svg
+        className="deel-hotspots"
+        viewBox={variant.viewBox}
+        preserveAspectRatio="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-label="Буриад хувцасны интерактив хэсгүүд"
+      >
+        {variant.renderHotspots(h)}
       </svg>
     </div>
   )
 }
 
 export default function HuvtsasniiUtga() {
+  const [gender, setGender] = useState('male')
   const [hovered, setHovered] = useState(null)
-  const activePart = hovered ? PART_MAP[hovered] : null
+  const variant = VARIANTS[gender]
+  const partMap = Object.fromEntries(variant.parts.map(p => [p.id, p]))
+  const activePart = hovered ? partMap[hovered] : null
+
+  // Хүйс солих үед өмнөх hover-ийг арилгана
+  const switchGender = (g) => {
+    setGender(g)
+    setHovered(null)
+  }
 
   return (
     <main className="huvtsas-page">
@@ -120,9 +220,24 @@ export default function HuvtsasniiUtga() {
         <h1 className="section-title">Хувцасны утга судлал</h1>
         <span className="gold-line" />
         <p className="section-subtitle">
-          Буриад дэгэлийн хэсэг бүр тусгай утга, түүх агуулдаг.
+          Буриад дээлийн хэсэг бүр тусгай утга, түүх агуулдаг.
           Хулганаа хэсэг дээр аваачиж нууцыг нь нээ.
         </p>
+
+        {/* Эрэгтэй / Эмэгтэй сонгох товч */}
+        <div className="huvtsas-gender-switch" role="tablist" aria-label="Хүйс сонгох">
+          {Object.entries(VARIANTS).map(([key, v]) => (
+            <button
+              key={key}
+              role="tab"
+              aria-selected={gender === key}
+              className={`huvtsas-gender-btn${gender === key ? ' active' : ''}`}
+              onClick={() => switchGender(key)}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Interactive section */}
@@ -131,6 +246,7 @@ export default function HuvtsasniiUtga() {
         {/* Left — figure */}
         <div className="huvtsas-figure-wrap">
           <DeelFigure
+            variant={variant}
             hovered={hovered}
             onHover={setHovered}
             onLeave={() => setHovered(null)}
@@ -138,7 +254,7 @@ export default function HuvtsasniiUtga() {
 
           {/* Part labels */}
           <div className="huvtsas-labels">
-            {PARTS.map(p => (
+            {variant.parts.map(p => (
               <button
                 key={p.id}
                 className={`huvtsas-label-btn${hovered === p.id ? ' active' : ''}`}
@@ -154,7 +270,7 @@ export default function HuvtsasniiUtga() {
         {/* Right — info panel */}
         <div className="huvtsas-info">
           {activePart ? (
-            <div className="huvtsas-card" key={activePart.id}>
+            <div className="huvtsas-card" key={`${gender}-${activePart.id}`}>
               <div className="huvtsas-card__tag">{activePart.label}</div>
               <h2 className="huvtsas-card__meaning">{activePart.meaning}</h2>
               <span className="gold-line" style={{ margin: '16px 0' }} />
@@ -168,11 +284,11 @@ export default function HuvtsasniiUtga() {
                 <br />утга, түүхийг нь уншаарай
               </p>
               <div className="huvtsas-hint__dots">
-                {PARTS.map(p => (
+                {variant.parts.map((p, i) => (
                   <span
                     key={p.id}
                     className="huvtsas-hint__dot"
-                    style={{ animationDelay: `${PARTS.indexOf(p) * 0.15}s` }}
+                    style={{ animationDelay: `${i * 0.15}s` }}
                   />
                 ))}
               </div>
@@ -185,7 +301,7 @@ export default function HuvtsasniiUtga() {
       {/* Bottom — part chips row */}
       <section className="huvtsas-chips-section container">
         <div className="huvtsas-chips">
-          {PARTS.map(p => (
+          {variant.parts.map(p => (
             <button
               key={p.id}
               className={`huvtsas-chip${hovered === p.id ? ' active' : ''}`}

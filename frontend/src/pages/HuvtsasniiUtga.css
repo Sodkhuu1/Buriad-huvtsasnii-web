@@ -14,6 +14,40 @@
   border-bottom: 1px solid rgba(201,162,39,0.18);
 }
 
+/* Хүйс сонгох segmented switch */
+.huvtsas-gender-switch {
+  display: inline-flex;
+  margin-top: 28px;
+  background: white;
+  padding: 4px;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(13,27,42,0.08);
+  border: 1px solid rgba(201,162,39,0.22);
+}
+
+.huvtsas-gender-btn {
+  padding: 9px 30px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-mid);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.huvtsas-gender-btn:hover {
+  color: var(--crimson);
+}
+
+.huvtsas-gender-btn.active {
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-light));
+  color: white;
+  box-shadow: 0 4px 12px rgba(139,26,42,0.28);
+}
+
 /* ── Main layout ───────────────────────────────────── */
 .huvtsas-body {
   display: grid;

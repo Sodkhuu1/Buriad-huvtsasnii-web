@@ -1,221 +1,110 @@
-// payments.controller.js — QPay-ээр захиалгын төлбөр хүлээж авах
-
+// payments.controller.js — QPay төлбөрийн HTTP layer
 const pool = require('../db')
+const { Payment } = require('../models')
 const { createError } = require('../middleware/errorHandler')
 const qpay = require('../services/qpay')
-const notify = require('../services/notifications')
 
-const markPaymentPaid = async (client, pay, changedById = null, paidAt = new Date()) => {
-  await client.query(
-    `UPDATE payments SET status = 'paid', paid_at = $1 WHERE id = $2`,
-    [paidAt, pay.id]
-  )
-
-  const tRes = await client.query(
-    `SELECT tailor_id, order_number FROM orders WHERE id = $1`,
-    [pay.order_id]
-  )
-  if (tRes.rows[0]?.tailor_id) {
-    await notify.send(client, {
-      userId: tRes.rows[0].tailor_id,
-      orderId: pay.order_id,
-      title: 'Төлбөр ирлээ',
-      content: `${tRes.rows[0].order_number} захиалгын төлбөр төлөгдлөө.`,
-    })
-  }
-
-  return pay.order_status
-}
-
-// POST /api/payments/orders/:id/invoice
-// Zahialagch torlog jendlee tolboriin invoice usgenee
+// POST /api/payments/orders/:id/invoice — Payment.capture() ашиглана
 const createInvoice = async (req, res, next) => {
-  const client = await pool.connect()
   try {
-    await client.query('BEGIN')
-
-    // Zahialga uurinh esehiig + statusiig shalgaa
-    const orderRes = await client.query(
+    // захиалгаа шалгана
+    const orderRes = await pool.query(
       `SELECT id, order_number, status, total_amount
        FROM orders WHERE id = $1 AND customer_id = $2`,
       [req.params.id, req.user.id]
     )
-    if (!orderRes.rows.length) throw createError(404, 'Захиалга олдсонгүй')
+    if (!orderRes.rows.length) return next(createError(404, 'Захиалга олдсонгүй'))
 
     const order = orderRes.rows[0]
     if (order.status !== 'accepted') {
-      throw createError(400, 'Зөвхөн оёдолчин баталсан захиалгад төлбөр хийнэ')
+      return next(createError(400, 'Зөвхөн оёдолчин баталсан захиалгад төлбөр хийнэ'))
     }
 
-    // Aldartai pending tolbor baival uunig dahin avna — duplicate invoice usgehgui
-    const existing = await client.query(
-      `SELECT id, transaction_reference FROM payments
-       WHERE order_id = $1 AND status = 'pending'
-       ORDER BY created_at DESC LIMIT 1`,
-      [order.id]
-    )
+    // Payment instance авна эсвэл шинэ үүсгэнэ
+    const payment = await Payment.createOrReuse(order.id, parseFloat(order.total_amount))
 
-    let payment
-    let invoiceData
-
-    if (existing.rows.length) {
-      // QPay-aas dakhin QR avah shaardlaga baikhgu — meshen invoice-iig dahin durdana
-      // Tegehguu mock horimd qrImage-iig nemj uusgeh kheregtei tul shineer khiine
-      payment = existing.rows[0]
-      invoiceData = await qpay.createInvoice({
-        orderId: order.id,
-        orderNumber: order.order_number,
-        amount: parseFloat(order.total_amount),
-        description: `Захиалга ${order.order_number}`,
-      })
-      // transaction_reference-ee solnoo
-      await client.query(
-        `UPDATE payments SET transaction_reference = $1 WHERE id = $2`,
-        [invoiceData.invoiceId, payment.id]
-      )
-    } else {
-      invoiceData = await qpay.createInvoice({
-        orderId: order.id,
-        orderNumber: order.order_number,
-        amount: parseFloat(order.total_amount),
-        description: `Захиалга ${order.order_number}`,
-      })
-
-      const insertRes = await client.query(
-        `INSERT INTO payments (order_id, amount, method, status, transaction_reference)
-         VALUES ($1, $2, 'qpay', 'pending', $3)
-         RETURNING id`,
-        [order.id, order.total_amount, invoiceData.invoiceId]
-      )
-      payment = insertRes.rows[0]
-    }
-
-    await client.query('COMMIT')
+    // capture() — QPay invoice үүсгэнэ
+    const invoiceData = await payment.capture()
 
     res.status(201).json({
-      success: true,
+      success:    true,
       payment_id: payment.id,
-      qr_image: invoiceData.qrImage,
-      qr_text: invoiceData.qrText,
-      urls: invoiceData.urls,
-      is_mock: invoiceData.isMock,
+      qr_image:   invoiceData.qrImage,
+      qr_text:    invoiceData.qrText,
+      urls:       invoiceData.urls,
+      is_mock:    invoiceData.isMock,
     })
   } catch (err) {
-    await client.query('ROLLBACK')
     next(err)
-  } finally {
-    client.release()
   }
 }
 
-// GET /api/payments/:paymentId/check
-// Frontend-ees 3 sek tutamd duudana, paid bolson esehiig shalgana
+// GET /api/payments/:paymentId/check — Payment.verify() ашиглана
 const checkPayment = async (req, res, next) => {
-  const client = await pool.connect()
   try {
-    await client.query('BEGIN')
+    const payment = await Payment.findById(req.params.paymentId)
 
-    // Tölbör + zahialga uurinh esehiig shalgaa
-    const payRes = await client.query(
-      `SELECT p.id, p.order_id, p.status, p.transaction_reference, p.amount,
-              o.customer_id, o.status AS order_status
-       FROM payments p
-       JOIN orders o ON o.id = p.order_id
-       WHERE p.id = $1`,
-      [req.params.paymentId]
-    )
-    if (!payRes.rows.length) throw createError(404, 'Төлбөр олдсонгүй')
+    // өөрийн захиалга мөн эсэхийг шалгана
+    if (payment.customerId !== req.user.id) return next(createError(403, 'Хандах эрхгүй'))
 
-    const pay = payRes.rows[0]
-    if (pay.customer_id !== req.user.id) throw createError(403, 'Хандах эрхгүй')
+    // verify() — QPay-д шалгаж, paid бол БД шинэчилнэ
+    const result = await payment.verify(req.user.id)
 
-    // Aldartai paid bol davtaad shalgah ch hereggui
-    if (pay.status === 'paid') {
-      await client.query('COMMIT')
-      return res.json({ success: true, paid: true, order_status: pay.order_status })
-    }
-
-    // QPay-d shalgaa
-    const result = await qpay.checkPayment(pay.transaction_reference)
-
-    if (!result.paid) {
-      await client.query('COMMIT')
-      return res.json({ success: true, paid: false })
-    }
-
-    const orderStatus = await markPaymentPaid(client, pay, req.user.id, result.paidAt || new Date())
-
-    await client.query('COMMIT')
-    res.json({ success: true, paid: true, order_status: orderStatus })
+    res.json({
+      success:      true,
+      paid:         result.paid,
+      order_status: result.orderStatus,
+    })
   } catch (err) {
-    await client.query('ROLLBACK')
     next(err)
-  } finally {
-    client.release()
   }
 }
 
-// POST /api/payments/qpay/callback
-// QPay calls this URL after payment. The route is public, but we re-check the
-// invoice with QPay before changing local payment/order state.
+// POST /api/payments/qpay/callback — QPay webhook
 const handleQpayCallback = async (req, res, next) => {
   const client = await pool.connect()
   try {
     await client.query('BEGIN')
 
-    const invoiceId =
-      req.body?.invoice_id ||
-      req.body?.object_id ||
-      req.body?.transaction_reference ||
-      req.query?.invoice_id ||
-      req.query?.object_id
+    const invoiceId = req.body?.invoice_id || req.body?.object_id || req.query?.invoice_id
+    const orderId   = req.query?.order_id  || req.body?.order_id
 
-    const orderId = req.query?.order_id || req.body?.order_id
+    if (!invoiceId && !orderId) throw createError(400, 'invoice_id эсвэл order_id шаардлагатай')
 
-    if (!invoiceId && !orderId) {
-      throw createError(400, 'invoice_id or order_id is required')
-    }
-
-    const params = []
+    const params     = []
     const conditions = ["p.status = 'pending'"]
-
-    if (invoiceId) {
-      params.push(invoiceId)
-      conditions.push(`p.transaction_reference = $${params.length}`)
-    }
-    if (orderId) {
-      params.push(orderId)
-      conditions.push(`p.order_id = $${params.length}`)
-    }
+    if (invoiceId) { params.push(invoiceId); conditions.push(`p.transaction_reference = $${params.length}`) }
+    if (orderId)   { params.push(orderId);   conditions.push(`p.order_id = $${params.length}`) }
 
     const payRes = await client.query(
-      `SELECT p.id, p.order_id, p.status, p.transaction_reference, p.amount,
-              o.status AS order_status
-       FROM payments p
-       JOIN orders o ON o.id = p.order_id
+      `SELECT p.*, o.status AS order_status, o.customer_id, o.order_number
+       FROM payments p JOIN orders o ON o.id = p.order_id
        WHERE ${conditions.join(' AND ')}
-       ORDER BY p.created_at DESC
-       LIMIT 1`,
+       ORDER BY p.created_at DESC LIMIT 1`,
       params
     )
 
     if (!payRes.rows.length) {
       await client.query('COMMIT')
-      return res.json({ success: true, message: 'No pending payment to update' })
+      return res.json({ success: true, message: 'Pending төлбөр олдсонгүй' })
     }
 
-    const pay = payRes.rows[0]
-    const result = await qpay.checkPayment(pay.transaction_reference)
+    // Payment instance үүсгэж verify() дуудна
+    const payment = new Payment(payRes.rows[0])
+    const result  = await qpay.checkPayment(payment.transactionRef)
 
     if (!result.paid) {
       await client.query('COMMIT')
       return res.status(202).json({ success: true, paid: false })
     }
 
-    const orderStatus = await markPaymentPaid(client, pay, null, result.paidAt || new Date())
+    await client.query(
+      `UPDATE payments SET status='paid', paid_at=$1 WHERE id=$2`,
+      [result.paidAt || new Date(), payment.id]
+    )
 
     await client.query('COMMIT')
-    res.json({ success: true, paid: true, order_status: orderStatus })
+    res.json({ success: true, paid: true })
   } catch (err) {
     await client.query('ROLLBACK')
     next(err)
