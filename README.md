@@ -8,7 +8,30 @@
 
 зорилготой веб систем юм.
 
-## Documentation
 
-- [Системийн шинжилгээ ба диаграмм](./docs/system-analysis-and-diagrams.md)
-- [Дэлгэрэнгүй class diagram](./docs/class-diagram.md)
+## Local setup
+
+### Backend
+
+```bash
+cd backend
+npm install
+copy .env.example .env
+npm run migrate
+npm run dev
+```
+
+`.env` файлд PostgreSQL тохиргоо, `JWT_SECRET`, `CLIENT_URL`, шаардлагатай бол QPay credential-уудыг тохируулна.
+
+QPay credential байхгүй үед систем demo/mock төлбөрийн горимоор ажиллана. Бодит QPay ашиглах бол QPay merchant эрх авч `QPAY_CLIENT_ID`, `QPAY_CLIENT_SECRET`, `QPAY_INVOICE_CODE`, `SERVER_URL` утгуудыг бөглөнө.
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+copy .env.example .env
+npm run dev
+```
+
+Production эсвэл өөр backend URL ашиглах бол `VITE_API_URL`-г өөрчилнө.
