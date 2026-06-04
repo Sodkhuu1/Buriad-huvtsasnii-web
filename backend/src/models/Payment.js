@@ -50,6 +50,23 @@ class Payment {
         `UPDATE payments SET status = 'paid', paid_at = $1 WHERE id = $2`,
         [result.paidAt || new Date(), this.id]
       )
+
+      // tölbör orloo — order-iig deposit_paid руу ахиулна, зөвхөн accepted baival
+      const oRes = await client.query(
+        `UPDATE orders SET status = 'deposit_paid', updated_at = NOW()
+         WHERE id = $1 AND status = 'accepted'
+         RETURNING status`,
+        [this.orderId]
+      )
+      if (oRes.rows.length) {
+        await client.query(
+          `INSERT INTO order_status_history (order_id, from_status, to_status, changed_by_id, note)
+           VALUES ($1, 'accepted', 'deposit_paid', $2, 'Урьдчилгаа төлбөр төлөгдлөө')`,
+          [this.orderId, changedById]
+        )
+        this.orderStatus = 'deposit_paid'
+      }
+
       if (this.orderNumber) {
         const tRes = await client.query(
           `SELECT tailor_id, order_number FROM orders WHERE id = $1`, [this.orderId]

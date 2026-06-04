@@ -41,7 +41,7 @@ export default function Footer() {
             <h4 className="footer__col-title">Холбоо</h4>
             <ul className="footer__links footer__links--contact">
               <li>Улаанбаатар, Монгол</li>
-              <li>+976 9900 0000</li>
+              <li>+976 9908 2470</li>
               <li>info@denz.mn</li>
               <li>Даваа-Баасан 09:00-18:00</li>
             </ul>
@@ -49,7 +49,7 @@ export default function Footer() {
 
           <div className="footer__col footer__col--action">
             <h4 className="footer__col-title">Шууд эхлэх</h4>
-            <p className="footer__action-text">Хэрэглэгчийг шууд захиалгын урсгал руу оруулах товч одоо footer дээр ч тод харагдана.</p>
+            <p className="footer__action-text">Зайнаас захиалсан ч захиалгын явц бүрэн харуулах боломжтой.</p>
             <Link to="/zahialga" className="btn-primary footer__cta">Захиалга эхлэх</Link>
           </div>
         </div>

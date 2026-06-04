@@ -22,9 +22,8 @@ export const TAILOR_ACTIONS = {
     { label: 'Захиалга хүлээн авах', next: 'accepted', style: 'primary' },
     { label: 'Татгалзах', next: 'rejected', style: 'danger' },
   ],
-  accepted: [
-    { label: 'Оёдол эхлүүлэх', next: 'in_production', style: 'primary' },
-  ],
+  // accepted üyed töbör hülee — zahialagch tölj deposit_paid bolohoor l oyod ehelne
+  accepted: [],
   deposit_paid: [
     { label: 'Оёдол эхлүүлэх', next: 'in_production', style: 'primary' },
   ],

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { api } from '../api'
 import OrderChat from '../components/OrderChat'
+import PaymentModal from '../components/PaymentModal'
 import {
   STATUS_LABEL, statusBadgeClass, MEASUREMENT_LABEL, SHIPMENT_MODE_LABEL,
   SHIPMENT_STATUS_LABEL, ORDER_PROGRESS_STEPS, getProgressIndex,
@@ -22,6 +23,7 @@ export default function MyOrderDetail() {
   const [hoverRating, setHoverRating] = useState(0)
   const [reviewComment, setReviewComment] = useState('')
   const [submittingReview, setSubmittingReview] = useState(false)
+  const [showPay, setShowPay] = useState(false)
 
   useEffect(() => {
     api.get(`/orders/my/${id}`)
@@ -29,6 +31,16 @@ export default function MyOrderDetail() {
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }, [id])
+
+  // töbör amjilttai bolson dараа order-iig дахин татна
+  const refetchOrder = async () => {
+    try {
+      const data = await api.get(`/orders/my/${id}`)
+      setOrder(data.order)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
 
   // Uneglee uldeele
   const handleSubmitReview = async (e) => {
@@ -247,6 +259,16 @@ export default function MyOrderDetail() {
                 <span>{Number(order.total_amount || 0).toLocaleString()}₮</span>
               </div>
             </div>
+
+            {/* Töbör — zovkhon batalsan zahialgand tövch garna */}
+            {order.status === 'accepted' && (
+              <button className="mod-pay-btn" onClick={() => setShowPay(true)}>
+                QPay-ээр төлөх
+              </button>
+            )}
+            {order.status === 'deposit_paid' && (
+              <div className="mod-paid-note">✓ Төлбөр төлөгдсөн</div>
+            )}
           </div>
 
         </div>
@@ -444,6 +466,15 @@ export default function MyOrderDetail() {
 
         </div>
       </div>
+
+      {showPay && (
+        <PaymentModal
+          orderId={order.id}
+          amount={order.total_amount}
+          onClose={() => setShowPay(false)}
+          onSuccess={() => { setShowPay(false); refetchOrder() }}
+        />
+      )}
     </div>
   )
 }

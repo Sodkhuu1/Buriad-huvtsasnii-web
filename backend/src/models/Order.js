@@ -6,7 +6,7 @@ const { createError } = require('../middleware/errorHandler')
 // зөвшөөрөгдсөн статус шилжилтүүд
 const ALLOWED_TRANSITIONS = {
   submitted:     ['accepted', 'rejected'],
-  accepted:      ['in_production'],
+  accepted:      [],            // төлбөр төлөгдөхгүй бол оёдолчин руу шилжихгүй
   deposit_paid:  ['in_production'],
   in_production: ['ready'],
   ready:         ['delivered'],

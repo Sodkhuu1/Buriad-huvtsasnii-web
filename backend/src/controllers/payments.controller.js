@@ -16,6 +16,9 @@ const createInvoice = async (req, res, next) => {
     if (!orderRes.rows.length) return next(createError(404, 'Захиалга олдсонгүй'))
 
     const order = orderRes.rows[0]
+    if (order.status === 'deposit_paid') {
+      return next(createError(400, 'Энэ захиалгын төлбөр аль хэдийн төлөгдсөн байна'))
+    }
     if (order.status !== 'accepted') {
       return next(createError(400, 'Зөвхөн оёдолчин баталсан захиалгад төлбөр хийнэ'))
     }
@@ -102,6 +105,21 @@ const handleQpayCallback = async (req, res, next) => {
       `UPDATE payments SET status='paid', paid_at=$1 WHERE id=$2`,
       [result.paidAt || new Date(), payment.id]
     )
+
+    // order-iig deposit_paid руу ахиулна, зөвхөн accepted baival
+    const oRes = await client.query(
+      `UPDATE orders SET status='deposit_paid', updated_at=NOW()
+       WHERE id=$1 AND status='accepted'
+       RETURNING status`,
+      [payment.orderId]
+    )
+    if (oRes.rows.length) {
+      await client.query(
+        `INSERT INTO order_status_history (order_id, from_status, to_status, changed_by_id, note)
+         VALUES ($1, 'accepted', 'deposit_paid', $2, 'Урьдчилгаа төлбөр төлөгдлөө')`,
+        [payment.orderId, payment.customerId || null]
+      )
+    }
 
     await client.query('COMMIT')
     res.json({ success: true, paid: true })

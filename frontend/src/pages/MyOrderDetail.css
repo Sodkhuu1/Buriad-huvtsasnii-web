@@ -115,6 +115,25 @@
   cursor: not-allowed;
 }
 
+/* Töbör karton dahi tövch — bukhel örgön */
+.mod-card .mod-pay-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 11px 18px;
+}
+
+/* Töbör tölögdsön temdeglel */
+.mod-paid-note {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+}
+
 /* Uneglee — review form bolon harag */
 .mod-review-hint {
   font-size: 0.85rem;

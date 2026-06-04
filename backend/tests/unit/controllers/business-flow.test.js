@@ -286,14 +286,14 @@ describe('admin and tailor status flow', () => {
     expect(client.query).toHaveBeenCalledWith('COMMIT')
   })
 
-  it('lets tailor move an accepted order into production', async () => {
+  it('lets tailor move a paid order into production', async () => {
     // updateOrderStatus → Tailor.reviewOrder() → Order.findByIdForTailor() (pool.query) → order.changeStatus() (pool.connect)
     // controller дараа нь pool.query-аар customer_id татна, pool.connect-аар notify илгээнэ
 
     pool.query.mockImplementation(async (sql) => {
-      // Order.findByIdForTailor — tailor-ийн захиалга олна
+      // Order.findByIdForTailor — tailor-ийн захиалга олно (töbör tölögdsön → deposit_paid)
       if (sql.includes('FROM orders o') && sql.includes('tailor_id = $2')) {
-        return { rows: [{ id: 'order-1', status: 'accepted', order_number: 'ORD-12345678', customer_id: 'customer-1', tailor_id: 'tailor-1' }] }
+        return { rows: [{ id: 'order-1', status: 'deposit_paid', order_number: 'ORD-12345678', customer_id: 'customer-1', tailor_id: 'tailor-1' }] }
       }
       // controller notification query
       if (sql.includes('SELECT customer_id FROM orders')) {

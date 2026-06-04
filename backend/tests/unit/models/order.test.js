@@ -59,17 +59,24 @@ describe('Order#changeStatus() — статус шилжилтийн шалга�
 
   beforeEach(() => { vi.clearAllMocks() })
 
-  it('зөвшөөрөгдсөн шилжилт (accepted → in_production) ажиллана', async () => {
+  it('зөвшөөрөгдсөн шилжилт (deposit_paid → in_production) ажиллана', async () => {
     const client = makeClient()
     pool.connect.mockResolvedValue(client)
 
-    const o = new Order({ id: 'o1', order_number: 'ORD-001', status: 'accepted', total_amount: '0' })
+    const o = new Order({ id: 'o1', order_number: 'ORD-001', status: 'deposit_paid', total_amount: '0' })
     const result = await o.changeStatus('in_production', 'tailor-1', 'started')
 
     expect(result.status).toBe('in_production')
     expect(o.status).toBe('in_production')
     expect(client.query).toHaveBeenCalledWith('COMMIT')
     expect(client.release).toHaveBeenCalledTimes(1)
+  })
+
+  it('töbör tölögdöхгүй (accepted → in_production) 400 алдаа өгнө', async () => {
+    const o = new Order({ id: 'o1', order_number: 'ORD-001', status: 'accepted', total_amount: '0' })
+
+    await expect(o.changeStatus('in_production', 'tailor-1')).rejects.toMatchObject({ statusCode: 400 })
+    expect(pool.connect).not.toHaveBeenCalled()
   })
 
   it('зөвшөөрөгдөөгүй шилжилт (accepted → delivered) 400 алдаа өгнө', async () => {

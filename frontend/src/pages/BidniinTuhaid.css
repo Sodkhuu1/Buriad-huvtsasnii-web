@@ -1,0 +1,411 @@
+/* ========================
+   About page — Бидний тухай
+   ======================== */
+
+.about-page {
+  padding-bottom: 120px;
+}
+
+/* --- Hero --- */
+.about-hero {
+  padding: 160px 0 100px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.about-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 0%, rgba(201, 163, 95, 0.14), transparent),
+    radial-gradient(ellipse 50% 40% at 0% 100%, rgba(141, 35, 50, 0.08), transparent);
+  pointer-events: none;
+}
+
+.about-hero__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.about-hero__title {
+  margin-top: 18px;
+}
+
+/* --- Story --- */
+.about-story {
+  margin-top: 80px;
+}
+
+.about-story__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.about-story__text {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.about-story__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.1;
+  margin: 12px 0 4px;
+}
+
+.about-story__text p {
+  color: var(--text-mid);
+  line-height: 1.85;
+  font-size: 0.97rem;
+}
+
+.about-story__cta {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+/* Timeline */
+.about-story__tl-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--navy);
+  margin-bottom: 28px;
+  font-weight: 600;
+}
+
+.about-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.about-timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--gold) 0%, rgba(201, 163, 95, 0.15) 100%);
+}
+
+.about-timeline__item {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding-bottom: 24px;
+  position: relative;
+}
+
+.about-timeline__dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 3px solid var(--cream);
+  box-shadow: 0 0 0 2px var(--gold);
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+.about-timeline__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.about-timeline__year {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--crimson);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.about-timeline__event {
+  font-size: 0.93rem;
+  color: var(--text-mid);
+  line-height: 1.5;
+}
+
+/* --- Values --- */
+.about-values-section {
+  margin-top: 100px;
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(201, 163, 95, 0.06) 50%, transparent 100%);
+}
+
+.about-values-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 52px;
+  text-align: center;
+}
+
+.about-values-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.about-value-card {
+  padding: 36px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.about-value-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.about-value-card__icon {
+  font-size: 1.8rem;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.about-value-card__title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.about-value-card__desc {
+  font-size: 0.9rem;
+  color: var(--text-mid);
+  line-height: 1.75;
+}
+
+/* --- Tech --- */
+.about-tech {
+  margin-top: 100px;
+}
+
+.about-tech__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 52px;
+  text-align: center;
+}
+
+.about-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.about-tech-card {
+  padding: 32px 26px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(201, 163, 95, 0.2);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform var(--transition);
+}
+
+.about-tech-card:hover {
+  transform: translateY(-3px);
+}
+
+.about-tech-card__num {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: rgba(201, 163, 95, 0.4);
+  line-height: 1;
+}
+
+.about-tech-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.about-tech-card p {
+  font-size: 0.88rem;
+  color: var(--text-mid);
+  line-height: 1.7;
+}
+
+/* --- Team --- */
+.about-team-section {
+  margin-top: 100px;
+}
+
+.about-team__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 52px;
+  text-align: center;
+}
+
+.about-team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.about-team-card {
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  transition: transform var(--transition);
+}
+
+.about-team-card:hover {
+  transform: translateY(-4px);
+}
+
+.about-team-card__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-light));
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 28px rgba(141, 35, 50, 0.22);
+}
+
+.about-team-card__name {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--navy);
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.about-team-card__role {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 5px 14px;
+  background: rgba(201, 163, 95, 0.1);
+  border-radius: 999px;
+}
+
+.about-team-card__bio {
+  font-size: 0.9rem;
+  color: var(--text-mid);
+  line-height: 1.75;
+  margin-top: 4px;
+}
+
+/* --- CTA --- */
+.about-cta {
+  margin-top: 100px;
+}
+
+.about-cta__inner {
+  padding: 72px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.about-cta__inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(201, 163, 95, 0.08), transparent);
+  pointer-events: none;
+}
+
+.about-cta__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  font-weight: 700;
+  color: var(--navy);
+  position: relative;
+}
+
+.about-cta__sub {
+  font-size: 0.97rem;
+  color: var(--text-mid);
+  max-width: 520px;
+  line-height: 1.8;
+  position: relative;
+}
+
+.about-cta__actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  position: relative;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+  .about-values-grid,
+  .about-tech-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero {
+    padding: 120px 0 72px;
+  }
+
+  .about-story__grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .about-values-grid,
+  .about-tech-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-cta__inner {
+    padding: 52px 28px;
+  }
+}

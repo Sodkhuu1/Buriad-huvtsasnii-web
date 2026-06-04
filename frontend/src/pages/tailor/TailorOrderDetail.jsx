@@ -274,6 +274,16 @@ export default function TailorOrderDetail() {
             )}
           </div>
 
+          {/* accepted üyed töbör hülee — oyod ehluulehiin tuld zahialagch tölöх ystoi */}
+          {order.status === 'accepted' && (
+            <div className="td-card tod-actions-card">
+              <h3 className="tod-card-title">Үйлдэл хийх</h3>
+              <p className="tod-ship-hint">
+                Захиалагч урьдчилгаа төлбөрөө төлсний дараа оёдол эхлүүлэх боломжтой болно.
+              </p>
+            </div>
+          )}
+
           {/* Actions */}
           {actions.length > 0 && (
             <div className="td-card tod-actions-card">
